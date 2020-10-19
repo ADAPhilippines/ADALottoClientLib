@@ -21,13 +21,13 @@ namespace ADALotto.Client
 
         public async Task<Transaction?> GetGameGenesisTxAsync(float startBlock, float endBlock)
         {
-            var transactions = await GetGameTransactionsAsync(GameTxMetaType.Start, startBlock, endBlock, GameWalletAddress, GameWalletAddress, null, "DESC");
+            var transactions = await GetGameTransactionsAsync(GameTxMetaType.Genesis, startBlock, endBlock, GameWalletAddress, GameWalletAddress, null, "DESC");
             return transactions?.FirstOrDefault();
         }
 
-        public async Task<Transaction?> GetGameEndTxAsync(float startBlock, float endBlock)
+        public async Task<Transaction?> GetEndGameTxAsync(float startBlock, float endBlock)
         {
-            var transactions = await GetGameTransactionsAsync(GameTxMetaType.End, startBlock, endBlock, GameWalletAddress, GameWalletAddress, null, "DESC");
+            var transactions = await GetGameTransactionsAsync(GameTxMetaType.EndGame, startBlock, endBlock, GameWalletAddress, GameWalletAddress, null, "DESC");
             return transactions?.FirstOrDefault();
         }
 
@@ -98,8 +98,8 @@ namespace ADALotto.Client
                     {
                         filter = new
                         {
-                            sender = sender,
-                            receiver = receiver,
+                            sender,
+                            receiver,
                             type = (int)type,
                             amount_gte = amount
                         }
