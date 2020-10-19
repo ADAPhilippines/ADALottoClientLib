@@ -1,4 +1,5 @@
 ﻿using ADALotto.Models;
+using ADALottoModels.Enumerations;
 using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
@@ -20,9 +21,20 @@ namespace ADALotto.Client
 
         public async Task<Transaction?> GetGameGenesisTxAsync(float startBlock, float endBlock)
         {
-            var transactions = await GetGameTransactionsAsync(0, startBlock, endBlock, GameWalletAddress, GameWalletAddress);
-
+            var transactions = await GetGameTransactionsAsync(GameTxMetaType.Start, startBlock, endBlock, GameWalletAddress, GameWalletAddress, null, "DESC");
             return transactions?.FirstOrDefault();
+        }
+
+        public async Task<Transaction?> GetGameEndTxAsync(float startBlock, float endBlock)
+        {
+            var transactions = await GetGameTransactionsAsync(GameTxMetaType.End, startBlock, endBlock, GameWalletAddress, GameWalletAddress, null, "DESC");
+            return transactions?.FirstOrDefault();
+        }
+
+        public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(float startBlock, float endBlock, float amount)
+        {
+            var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, null, null, "ASC", amount);
+            return transactions;
         }
 
         public async Task<Block?> GetLatestBlockAsync()
@@ -41,7 +53,7 @@ namespace ADALotto.Client
                     Query = $@"
                         query {{
                             blockChainInfo {{
-                                blocks (order_by: {{ id: DESC }}, first: { limit }) {{
+                                blocks (order_by: {{ id: { sortDir } }}, first: { limit }) {{
                                     nodes {{
                                         id,
                                         epochNo
@@ -59,9 +71,10 @@ namespace ADALotto.Client
             return result;
         }
 
-        public async Task<IEnumerable<Transaction>> GetGameTransactionsAsync(int type, float startBlock, float endBlock, string receiver, string sender = "", int limit=10, string sortDir = "ASC")
+        public async Task<IEnumerable<Transaction>> GetGameTransactionsAsync(GameTxMetaType type, float startBlock, float endBlock, string receiver, string? sender = "", int? limit=null, string sortDir = "ASC", float amount = 1000000)
         {
             var result = new List<Transaction>();
+            var limitClause = limit != null ? $"first { limit }," : string.Empty;
             if (sortDir == "ASC" || sortDir == "DESC")
             {
                 var query = new GraphQLRequest
@@ -69,7 +82,7 @@ namespace ADALotto.Client
                     Query = $@"
                     query ($filter: AdaLottoTxFilterInput!) {{
                         adaLottoGameInfo {{
-                            transactions(filter: $filter, first: { limit }, where: {{ AND: [{{ block_gte: { startBlock } }}, {{ block_lte: { endBlock } }}] }}) {{
+                            transactions(order_by: {{ id: { sortDir } }}, filter: $filter, { limitClause } where: {{ block_gte: { startBlock }, block_lte: {endBlock} }}) {{
                                 nodes {{
                                     id,
                                     block,
@@ -87,7 +100,8 @@ namespace ADALotto.Client
                         {
                             sender = sender,
                             receiver = receiver,
-                            type = type
+                            type = (int)type,
+                            amount_gte = amount
                         }
                     }
                 };
