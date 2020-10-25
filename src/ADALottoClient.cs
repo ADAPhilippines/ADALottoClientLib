@@ -31,6 +31,32 @@ namespace ADALotto.Client
             return transactions?.FirstOrDefault();
         }
 
+        public async Task<IEnumerable<string>> GetWinningNumbersAsync(float startBlock, int digits)
+        {
+            var results = new List<string>();
+            var query = new GraphQLRequest
+            {
+                Query = $@"
+                        query {{
+                          blockChainInfo {{
+                            blocks (first: {digits}, where: {{ id_gt: { startBlock }, size_gt: 3 }}) {{
+                              nodes {{
+                                size
+                              }}
+                            }}
+                          }}
+                        }}"
+            };
+
+            var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
+            var resultBlocks = new List<Block>();
+            if (graphQLResponse?.Data?.BlockChainInfo?.Blocks != null)
+                resultBlocks = graphQLResponse.Data.BlockChainInfo.Blocks.Nodes.ToList();
+
+            results = resultBlocks.Select(block => (block.Size % 100).ToString().PadLeft(2,'0')).ToList();
+            return results;
+        }
+
         public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(float startBlock, float endBlock, float amount)
         {
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, null, null, "ASC", amount);
@@ -56,7 +82,8 @@ namespace ADALotto.Client
                                 blocks (order_by: {{ id: { sortDir } }}, first: { limit }) {{
                                     nodes {{
                                         id,
-                                        epochNo
+                                        epochNo,
+                                        size
                                     }}
                                 }}
                             }}
