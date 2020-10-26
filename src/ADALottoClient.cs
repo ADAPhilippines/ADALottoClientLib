@@ -31,7 +31,7 @@ namespace ADALotto.Client
             return transactions?.FirstOrDefault();
         }
 
-        public async Task<IEnumerable<string>> GetWinningNumbersAsync(float startBlock, int digits)
+        public async Task<IEnumerable<Block>> GetWinningNumbersAsync(float startBlock, int digits)
         {
             var results = new List<string>();
             var query = new GraphQLRequest
@@ -39,7 +39,7 @@ namespace ADALotto.Client
                 Query = $@"
                         query {{
                           blockChainInfo {{
-                            blocks (first: {digits}, where: {{ id_gt: { startBlock }, size_gt: 3 }}) {{
+                            blocks (first: { digits }, where: {{ id_gt: { startBlock }, txCount_gt: 0 }}) {{
                               nodes {{
                                 size
                               }}
@@ -53,8 +53,36 @@ namespace ADALotto.Client
             if (graphQLResponse?.Data?.BlockChainInfo?.Blocks != null)
                 resultBlocks = graphQLResponse.Data.BlockChainInfo.Blocks.Nodes.ToList();
 
-            results = resultBlocks.Select(block => (block.Size % 100).ToString().PadLeft(2,'0')).ToList();
-            return results;
+            return resultBlocks;
+        }
+
+        public async Task<Block?> GetBlockInfo(float id)
+        {
+            Block? result;
+            var query = new GraphQLRequest
+            {
+                Query = $@"
+                        query {{
+                          blockChainInfo {{
+                            blocks (where: {{ id: { id } }}) {{
+                              nodes {{
+                                time,
+                                id,
+                                epochNo,
+                                size
+                              }}
+                            }}
+                          }}
+                        }}"
+            };
+
+            var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
+            if (graphQLResponse?.Data?.BlockChainInfo?.Blocks != null)
+                result = graphQLResponse.Data.BlockChainInfo.Blocks.Nodes.ToList().FirstOrDefault();
+            else
+                result = null;
+
+            return result;
         }
 
         public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(float startBlock, float endBlock, float amount)
