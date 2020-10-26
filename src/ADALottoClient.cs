@@ -31,7 +31,7 @@ namespace ADALotto.Client
             return transactions?.FirstOrDefault();
         }
 
-        public async Task<IEnumerable<Block>> GetWinningNumbersAsync(float startBlock, int digits)
+        public async Task<IEnumerable<Block>> GetWinningBlocksAsync(float startBlock)
         {
             var results = new List<string>();
             var query = new GraphQLRequest
@@ -39,7 +39,7 @@ namespace ADALotto.Client
                 Query = $@"
                         query {{
                           blockChainInfo {{
-                            blocks (first: { digits }, where: {{ id_gt: { startBlock }, txCount_gt: 0 }}) {{
+                            blocks (first: 50, where: {{ id_gt: { startBlock }, txCount_gt: 0 }}) {{
                               nodes {{
                                 size
                               }}
