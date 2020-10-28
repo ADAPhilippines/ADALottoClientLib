@@ -33,7 +33,6 @@ namespace ADALotto.Client
 
         public async Task<IEnumerable<Block>> GetWinningBlocksAsync(float startBlock)
         {
-            var results = new List<string>();
             var query = new GraphQLRequest
             {
                 Query = $@"
@@ -41,7 +40,8 @@ namespace ADALotto.Client
                           blockChainInfo {{
                             blocks (first: 50, where: {{ id_gt: { startBlock }, txCount_gt: 0 }}) {{
                               nodes {{
-                                size
+                                size,
+                                hash
                               }}
                             }}
                           }}
@@ -69,7 +69,8 @@ namespace ADALotto.Client
                                 time,
                                 id,
                                 epochNo,
-                                size
+                                size,
+                                hash
                               }}
                             }}
                           }}
@@ -111,7 +112,8 @@ namespace ADALotto.Client
                                     nodes {{
                                         id,
                                         epochNo,
-                                        size
+                                        size,
+                                        hash
                                     }}
                                 }}
                             }}
