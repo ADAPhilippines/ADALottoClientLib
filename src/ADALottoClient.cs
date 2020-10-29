@@ -1,10 +1,13 @@
 ﻿using ADALotto.Models;
+using ADALottoModels;
 using ADALottoModels.Enumerations;
 using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace ADALotto.Client
@@ -89,6 +92,41 @@ namespace ADALotto.Client
         public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(float startBlock, float endBlock, float amount)
         {
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, null, null, "ASC", amount);
+            var baseSBlock = 4778354;
+            var interval = 12960;
+            var txMeta = new ADALottoGameTicketTxMeta();
+            if (startBlock > baseSBlock && endBlock <= baseSBlock + interval)
+            {
+                txMeta.Combination = new List<int> { 96, 87, 13, 12, 36, 78 };
+            }
+            else if (startBlock > baseSBlock + interval && endBlock <= baseSBlock + (2*interval))
+            {
+                txMeta.Combination = new List<int> { 91, 65, 30, 88, 87, 17 };
+            }
+            else if (startBlock > baseSBlock + (2*interval) && endBlock <= baseSBlock + (3 * interval))
+            {
+                txMeta.Combination = new List<int> { 79, 99, 45, 92, 68, 94 };
+            }
+            else if (startBlock > baseSBlock + (3*interval) && endBlock <= baseSBlock + (4 * interval))
+            {
+                txMeta.Combination = new List<int> { 02, 21, 90, 53, 96, 26 };
+            }
+            else if (startBlock > baseSBlock + (4*interval) && endBlock <= baseSBlock + (5 * interval))
+            {
+                txMeta.Combination = new List<int> { 02, 21, 90, 53, 96, 26 };
+            }
+
+            var newTx = new Transaction
+            {
+                TxMetadata = new List<TransactionMeta>
+                {
+                    new TransactionMeta { Id = 12345566, Json = JsonSerializer.Serialize(txMeta)}
+                }
+            };
+            if (transactions == null) 
+                transactions = new List<Transaction>();
+            transactions = transactions.ToList();
+            ((List<Transaction>)transactions).Add(newTx);
             return transactions;
         }
 
