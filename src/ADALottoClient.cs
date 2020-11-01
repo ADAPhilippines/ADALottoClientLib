@@ -1,13 +1,10 @@
 ﻿using ADALotto.Models;
-using ADALottoModels;
 using ADALottoModels.Enumerations;
 using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace ADALotto.Client
