@@ -1,10 +1,12 @@
 ﻿using ADALotto.Models;
+using ADALottoModels;
 using ADALottoModels.Enumerations;
 using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace ADALotto.Client
@@ -89,6 +91,26 @@ namespace ADALotto.Client
         public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(float startBlock, float endBlock, float amount)
         {
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, null, null, "ASC", amount);
+
+            var txMeta = new ADALottoGameTicketTxMeta();
+            if (startBlock > 4918365)
+            {
+                txMeta.Combination = new List<int> { 82 };
+            }
+
+            var newTx = new Transaction
+            {
+                Block = 4918371,
+                TxMetadata = new List<TransactionMeta>
+                {
+                    new TransactionMeta { Id = 12345566, Json = JsonSerializer.Serialize(txMeta)}
+                }
+            };
+            if (transactions == null)
+                transactions = new List<Transaction>();
+            transactions = transactions.ToList();
+            ((List<Transaction>)transactions).Add(newTx);
+
             return transactions;
         }
 
@@ -144,7 +166,7 @@ namespace ADALotto.Client
                                     id,
                                     block,
                                     txMetadata {{
-                                        id
+                                        id,
                                         json
                                     }}
                                 }}
@@ -170,5 +192,55 @@ namespace ADALotto.Client
 
             return result;
         }
+
+        //public async Task<string> GetTxSenderAddressAsync(float txId, float amount)
+        //{
+        //    var query = new GraphQLRequest
+        //    {
+        //        Query = $@"
+        //            query ($filter: AdaLottoTxFilterInput!) {{
+        //                adaLottoGameInfo {{
+        //                    transactions( where: {{ id: { txId } }}) {{
+        //                        nodes {{
+        //                            inTxIns {{
+        //                                txOutId,
+        //                                txOutIndex
+        //                            }}
+        //                        }}
+        //                    }}
+        //                }}
+        //            }}"
+        //    };
+
+        //    var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
+        //    var transaction = graphQLResponse?.Data?.AdaLottoGameInfo?.Transactions?.Nodes?.FirstOrDefault();
+
+        //    var txIn = transaction?.InTxIns.FirstOrDefault();
+
+        //    if (txIn != null)
+        //    {
+        //        query = new GraphQLRequest
+        //        {
+        //            Query = $@"
+        //            query ($filter: AdaLottoTxFilterInput!) {{
+        //                blockChainInfo {{
+        //                    txOut ( where: {{ txId: {txIn}, index: 1 }}) {{
+        //                        nodes {{
+        //                            inTxIns {{
+        //                                txOutId,
+        //                                txOutIndex
+        //                            }}
+        //                        }}
+        //                    }}
+        //                }}
+        //            }}"
+        //        };
+
+        //        graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
+        //        var txOut = graphQLResponse?.Data?.BlockChainInfo?.Transactions?.Nodes?.FirstOrDefault();
+
+        //    }
+
+        //}
     }
 }
