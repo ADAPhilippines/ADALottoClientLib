@@ -21,6 +21,40 @@ namespace ADALotto.Client
             GameWalletAddress = gameWalletAddress;
         }
 
+        public async Task<Transaction?> GetRewardTxAsync(float startBlock, float endBlock, float amount, string address)
+        {
+            var query = new GraphQLRequest
+            {
+                Query = $@"
+                    query ($filter: AdaLottoTxFilterInput!) {{
+                        adaLottoGameInfo {{
+                            transactions(order_by: {{ id: DESC }}, filter: $filter, where: {{ block_gte: { startBlock }, block_lte: {endBlock} }}) {{
+                                nodes {{
+                                    id,
+                                    block,
+                                    txMetadata {{
+                                        id,
+                                        json
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }}",
+                Variables = new
+                {
+                    filter = new
+                    {
+                        sender = GameWalletAddress,
+                        receiver = address,
+                        amount_gte = amount
+                    }
+                }
+            };
+
+            var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
+            return graphQLResponse?.Data?.AdaLottoGameInfo?.Transactions?.Nodes?.FirstOrDefault();
+        }
+
         public async Task<Transaction?> GetGameGenesisTxAsync(float startBlock, float endBlock)
         {
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.Genesis, startBlock, endBlock, GameWalletAddress, GameWalletAddress, null, "DESC");
