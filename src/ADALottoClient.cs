@@ -91,25 +91,24 @@ namespace ADALotto.Client
         public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(float startBlock, float endBlock, float amount)
         {
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, null, null, "ASC", amount);
-
-            var txMeta = new ADALottoGameTicketTxMeta();
-            if (startBlock > 4918365)
+            if (startBlock > 4923590 && endBlock < 4923609)
             {
-                txMeta.Combination = new List<int> { 82 };
-            }
-
-            var newTx = new Transaction
-            {
-                Block = 4918371,
-                TxMetadata = new List<TransactionMeta>
+                var txMeta = new ADALottoGameTicketTxMeta();
+                txMeta.Combination = new List<int> { 61, 83, 16 };
+                var newTx = new Transaction
+                {
+                    Id = 2939174,
+                    Block = 4923599,
+                    TxMetadata = new List<TransactionMeta>
                 {
                     new TransactionMeta { Id = 12345566, Json = JsonSerializer.Serialize(txMeta)}
                 }
-            };
-            if (transactions == null)
-                transactions = new List<Transaction>();
-            transactions = transactions.ToList();
-            ((List<Transaction>)transactions).Add(newTx);
+                };
+                if (transactions == null)
+                    transactions = new List<Transaction>();
+                transactions = transactions.ToList();
+                ((List<Transaction>)transactions).Add(newTx);
+            }
 
             return transactions;
         }
@@ -193,54 +192,55 @@ namespace ADALotto.Client
             return result;
         }
 
-        //public async Task<string> GetTxSenderAddressAsync(float txId, float amount)
-        //{
-        //    var query = new GraphQLRequest
-        //    {
-        //        Query = $@"
-        //            query ($filter: AdaLottoTxFilterInput!) {{
-        //                adaLottoGameInfo {{
-        //                    transactions( where: {{ id: { txId } }}) {{
-        //                        nodes {{
-        //                            inTxIns {{
-        //                                txOutId,
-        //                                txOutIndex
-        //                            }}
-        //                        }}
-        //                    }}
-        //                }}
-        //            }}"
-        //    };
+        public async Task<string?> GetTxSenderAddressAsync(float txId)
+        {
+            var result = string.Empty;
+            var query = new GraphQLRequest
+            {
+                Query = $@"
+                    query {{
+                        blockChainInfo {{
+                            transactions ( where: {{ id: { txId } }}) {{
+                                nodes {{
+                                    inTxIns {{
+                                        txOutId,
+                                        txOutIndex
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }}"
+            };
 
-        //    var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
-        //    var transaction = graphQLResponse?.Data?.AdaLottoGameInfo?.Transactions?.Nodes?.FirstOrDefault();
+            var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
+            var transaction = graphQLResponse?.Data?.BlockChainInfo?.Transactions?.Nodes?.FirstOrDefault();
 
-        //    var txIn = transaction?.InTxIns.FirstOrDefault();
+            var txIn = transaction?.InTxIns.FirstOrDefault();
 
-        //    if (txIn != null)
-        //    {
-        //        query = new GraphQLRequest
-        //        {
-        //            Query = $@"
-        //            query ($filter: AdaLottoTxFilterInput!) {{
-        //                blockChainInfo {{
-        //                    txOut ( where: {{ txId: {txIn}, index: 1 }}) {{
-        //                        nodes {{
-        //                            inTxIns {{
-        //                                txOutId,
-        //                                txOutIndex
-        //                            }}
-        //                        }}
-        //                    }}
-        //                }}
-        //            }}"
-        //        };
+            if (txIn != null)
+            {
+                query = new GraphQLRequest
+                {
+                    Query = $@"
+                    query {{
+                        blockChainInfo {{
+                            txOuts ( where: {{ txId: {txIn.TxOutId}, index: {txIn.TxOutIndex} }}) {{
+                                nodes {{
+                                    address,
+                                    index
+                                }}
+                            }}
+                        }}
+                    }}"
+                };
 
-        //        graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
-        //        var txOut = graphQLResponse?.Data?.BlockChainInfo?.Transactions?.Nodes?.FirstOrDefault();
+                graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
+                var txOut = graphQLResponse?.Data?.BlockChainInfo?.TxOuts?.Nodes?.FirstOrDefault();
 
-        //    }
+                result = txOut != null ? txOut.Address : string.Empty;
+            }
 
-        //}
+            return result;
+        }
     }
 }
