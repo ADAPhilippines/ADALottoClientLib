@@ -21,7 +21,7 @@ namespace ADALotto.Client
             GameWalletAddress = gameWalletAddress;
         }
 
-        public async Task<Transaction?> GetRewardTxAsync(float startBlock, float endBlock, float amount, string address)
+        public async Task<Transaction?> GetRewardTxAsync(long startBlock, long endBlock, long amount, string address)
         {
             var query = new GraphQLRequest
             {
@@ -55,19 +55,19 @@ namespace ADALotto.Client
             return graphQLResponse?.Data?.AdaLottoGameInfo?.Transactions?.Nodes?.FirstOrDefault();
         }
 
-        public async Task<Transaction?> GetGameGenesisTxAsync(float startBlock, float endBlock)
+        public async Task<Transaction?> GetGameGenesisTxAsync(long startBlock, long endBlock)
         {
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.Genesis, startBlock, endBlock, GameWalletAddress, GameWalletAddress, null, "DESC");
             return transactions?.FirstOrDefault();
         }
 
-        public async Task<Transaction?> GetEndGameTxAsync(float startBlock, float endBlock)
+        public async Task<Transaction?> GetEndGameTxAsync(long startBlock, long endBlock)
         {
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.EndGame, startBlock, endBlock, GameWalletAddress, GameWalletAddress, null, "DESC");
             return transactions?.FirstOrDefault();
         }
 
-        public async Task<IEnumerable<Block>> GetWinningBlocksAsync(float startBlock)
+        public async Task<IEnumerable<Block>> GetWinningBlocksAsync(long startBlock)
         {
             var query = new GraphQLRequest
             {
@@ -92,7 +92,7 @@ namespace ADALotto.Client
             return resultBlocks;
         }
 
-        public async Task<Block?> GetBlockInfo(float id)
+        public async Task<Block?> GetBlockInfo(long id)
         {
             Block? result;
             var query = new GraphQLRequest
@@ -122,7 +122,7 @@ namespace ADALotto.Client
             return result;
         }
 
-        public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(float startBlock, float endBlock, float amount)
+        public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(long startBlock, long endBlock, long amount)
         {
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, null, null, "ASC", amount);
             //if (startBlock > 4923590 && endBlock < 4923609)
@@ -183,7 +183,7 @@ namespace ADALotto.Client
             return result;
         }
 
-        public async Task<IEnumerable<Transaction>> GetGameTransactionsAsync(GameTxMetaType type, float startBlock, float endBlock, string receiver, string? sender = "", int? limit=null, string sortDir = "ASC", float amount = 1000000)
+        public async Task<IEnumerable<Transaction>> GetGameTransactionsAsync(GameTxMetaType type, long startBlock, long endBlock, string receiver, string? sender = "", int? limit=null, string sortDir = "ASC", long amount = 1000000)
         {
             var result = new List<Transaction>();
             var limitClause = limit != null ? $"first { limit }," : string.Empty;
@@ -226,7 +226,7 @@ namespace ADALotto.Client
             return result;
         }
 
-        public async Task<string?> GetTxSenderAddressAsync(float txId)
+        public async Task<string?> GetTxSenderAddressAsync(long txId)
         {
             var result = string.Empty;
             var query = new GraphQLRequest
