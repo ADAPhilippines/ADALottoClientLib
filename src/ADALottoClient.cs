@@ -125,24 +125,6 @@ namespace ADALotto.Client
         public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(long startBlock, long endBlock, long amount)
         {
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, null, null, "ASC", amount);
-            //if (startBlock > 4923590 && endBlock < 4923609)
-            //{
-            //    var txMeta = new ADALottoGameTicketTxMeta();
-            //    txMeta.Combination = new List<int> { 61, 83, 16 };
-            //    var newTx = new Transaction
-            //    {
-            //        Id = 2939174,
-            //        Block = 4923599,
-            //        TxMetadata = new List<TransactionMeta>
-            //    {
-            //        new TransactionMeta { Id = 12345566, Json = JsonSerializer.Serialize(txMeta)}
-            //    }
-            //    };
-            //    if (transactions == null)
-            //        transactions = new List<Transaction>();
-            //    transactions = transactions.ToList();
-            //    ((List<Transaction>)transactions).Add(newTx);
-            //}
 
             return transactions;
         }
