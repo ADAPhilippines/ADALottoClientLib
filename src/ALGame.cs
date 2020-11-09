@@ -240,6 +240,7 @@ namespace ADALotto.ClientLib
 
             while (GameState.StartBlock < currentBlock)
             {
+                Console.WriteLine(currentBlock);
                 var ggTx = await ADALottoClient.GetGameGenesisTxAsync(currentBlock - BLOCK_CRAWL_COUNT - 1, currentBlock);
                 if (ggTx != null && ggTx.Block != null)
                 {
