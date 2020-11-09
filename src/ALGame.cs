@@ -135,7 +135,7 @@ namespace ADALotto.ClientLib
 
                                         if (winningTPtxes.Count() > 0)
                                         {
-                                            await UpdatePreviousWinnersAsync(winningTPtxes, drawBlockInfo);
+                                            await UpdatePreviousWinnersAsync(winningTPtxes);
                                             GameState.CurrentPot = 0;
                                             GameState.GameGenesisTx = null;
                                             GameState.GameGenesisTxMeta = null;
@@ -144,7 +144,7 @@ namespace ADALotto.ClientLib
                                         }
                                         else
                                         {
-                                            var nextDrawBlock =  await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo + GameState.GameGenesisTxMeta.BlockInterval);
+                                            var nextDrawBlock = await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo + GameState.GameGenesisTxMeta.BlockInterval);
                                             GameState.PrevDrawBlock = GameState.NextDrawBlock;
                                             GameState.NextDrawBlock = nextDrawBlock;
                                             GameState.CurrentPot += (long)(nextRoundTicketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
@@ -157,7 +157,7 @@ namespace ADALotto.ClientLib
                             }
                         }
 
-                        var searchEndBlock =  await ADALottoClient.GetBlockInfo(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT - 1);
+                        var searchEndBlock = await ADALottoClient.GetBlockInfo(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT - 1);
                         var ggTx = await ADALottoClient.GetGameGenesisTxAsync(GameState.StartBlock, searchEndBlock);
                         if (ggTx != null && ggTx?.Block1 != null)
                         {
@@ -188,10 +188,10 @@ namespace ADALotto.ClientLib
                             }
                         }
 
-                        GameState.StartBlock = LatestNetworkBlock.BlockNo <= GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT 
+                        GameState.StartBlock = LatestNetworkBlock.BlockNo <= GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT
                             ? LatestNetworkBlock : await ADALottoClient.GetBlockInfo(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT);
-                        
-                        Console.WriteLine(GameState.StartBlock.BlockNo);    
+
+                        Console.WriteLine(GameState.StartBlock.BlockNo);
                         OnFetch?.Invoke(this, new EventArgs());
                     }
 
@@ -206,7 +206,7 @@ namespace ADALotto.ClientLib
             }
         }
 
-        public void UpdatePreviousResults(IEnumerable<ALWinningBlock> winningBlocks, Block blockInfo, int winnerCount)
+        private void UpdatePreviousResults(IEnumerable<ALWinningBlock> winningBlocks, Block blockInfo, int winnerCount)
         {
             var result = new ALResult
             {
@@ -216,23 +216,29 @@ namespace ADALotto.ClientLib
                 WinnerCount = winnerCount
             };
 
-            var resultsList = GameState.PreviousResults.ToList();
+            var resultsList = GameState.PreviousResults?.ToList() ?? new List<ALResult>();
             resultsList.Insert(0, result);
-            GameState.PreviousResults = resultsList.Take(10).ToList();
+            if(resultsList.Count > 10) resultsList.Remove(resultsList.Last());
+            GameState.PreviousResults = resultsList;
         }
 
-        public async Task UpdatePreviousWinnersAsync(IEnumerable<Transaction> tpTxes, Block blockInfo)
+        private async Task UpdatePreviousWinnersAsync(IEnumerable<Transaction> tpTxes)
         {
             foreach (var tpTx in tpTxes)
             {
                 if (tpTx.Id != null)
                 {
-                    GameState.PreviousWinners.ToList().Insert(0, new ALWinner
+                    var newWinner = new ALWinner
                     {
                         Address = await ADALottoClient.GetTxSenderAddressAsync((long)tpTx.Id),
                         Prize = GameState.CurrentPot / tpTxes.Count(),
                         DrawBlock = GameState.NextDrawBlock
-                    });
+                    };
+                    
+                    var winnerList = GameState.PreviousWinners.ToList() ?? new List<ALWinner>();
+                    winnerList.Insert(0, newWinner);
+                    if(winnerList.Count > 10) winnerList.Remove(winnerList.Last());
+                    GameState.PreviousWinners = winnerList;
                 }
             }
         }
@@ -286,7 +292,7 @@ namespace ADALotto.ClientLib
                     }
                 }
                 currentBlock = await ADALottoClient.GetBlockInfo(currentBlock.BlockNo - BLOCK_CRAWL_COUNT);
-                Console.WriteLine(currentBlock.BlockNo);    
+                Console.WriteLine(currentBlock.BlockNo);
             }
             return await ADALottoClient.GetBlockInfo(HARD_CHECKPOINT);
         }
