@@ -19,6 +19,7 @@ namespace ADALotto.ClientLib
         private bool IsSyncing { get; set; } = false;
         private bool IsInitialSyncFinished { get; set; } = false;
         private Block LatestNetworkBlock { get; set; } = new Block();
+        private Block PreviousNetworkBlock { get; set; } = new Block();
         public ALGameState GameState { get; set; } = new ALGameState();
         public IEnumerable<ALWinningBlock> Combination { get; set; } = new List<ALWinningBlock>();
         public TimeSpan RemainingRoundTime => CalculateDrawTime(GameState.StartBlock, GameState.NextDrawBlock);
@@ -82,107 +83,112 @@ namespace ADALotto.ClientLib
                 IsSyncing = true;
                 await GetLatestNetworkBlockAsync();
                 var nextRoundTicketCount = 0;
-                while (GameState.StartBlock < LatestNetworkBlock.Id)
+                if (LatestNetworkBlock != PreviousNetworkBlock)
                 {
-                    if (GameState.GameGenesisTx != null && GameState.GameGenesisTxMeta != null)
+                    while (GameState.StartBlock < LatestNetworkBlock.Id)
                     {
-                        var ticketCount = 0;
-                        if (GameState.StartBlock < GameState.NextDrawBlock && GameState.NextDrawBlock <= Math.Min(GameState.StartBlock + BLOCK_CRAWL_COUNT, LatestNetworkBlock.Id))
+                        if (GameState.GameGenesisTx != null && GameState.GameGenesisTxMeta != null)
                         {
-                            GameState.IsDrawing = true;
-                            DrawStart?.Invoke(this, new EventArgs());
-                            ticketCount = await ADALottoClient.GetTPTxCountAsync(
-                                GameState.StartBlock,
-                                GameState.NextDrawBlock - 1,
-                                GameState.GameGenesisTxMeta.TicketPrice);
-                        }
-                        else if (!GameState.IsDrawing)
-                        {
-                            ticketCount = await ADALottoClient.GetTPTxCountAsync(
-                                GameState.StartBlock,
-                                GameState.StartBlock + BLOCK_CRAWL_COUNT - 1,
-                                GameState.GameGenesisTxMeta.TicketPrice);
-                        }
-                        GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
-
-                        if (GameState.IsDrawing)
-                        {
-                            nextRoundTicketCount += await ADALottoClient.GetTPTxCountAsync(
-                                Math.Max(GameState.StartBlock, GameState.NextDrawBlock),
-                                GameState.StartBlock + BLOCK_CRAWL_COUNT - 1,
-                                GameState.GameGenesisTxMeta.TicketPrice);
-
-                            Combination = await GetWinningBlocksAsync(GameState.NextDrawBlock, GameState.GameGenesisTxMeta.Digits);
-
-                            if (Combination.Count() == GameState.GameGenesisTxMeta.Digits)
+                            var ticketCount = 0;
+                            if (GameState.StartBlock < GameState.NextDrawBlock && GameState.NextDrawBlock <= Math.Min(GameState.StartBlock + BLOCK_CRAWL_COUNT, LatestNetworkBlock.Id))
                             {
-                                var drawBlockInfo = await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock);
-                                if (drawBlockInfo != null)
-                                {
-                                    var winningTPtxes = await ADALottoClient.GetWinningTPTxesAsync(
-                                        GameState.PrevDrawBlock,
-                                        GameState.NextDrawBlock - 1,
-                                        GameState.GameGenesisTxMeta.TicketPrice,
-                                        Combination.Select(wb => int.Parse(wb.Number)));
-                                    UpdatePreviousResults(Combination, drawBlockInfo, winningTPtxes.Count());
+                                GameState.IsDrawing = true;
+                                DrawStart?.Invoke(this, new EventArgs());
+                                ticketCount = await ADALottoClient.GetTPTxCountAsync(
+                                    GameState.StartBlock,
+                                    GameState.NextDrawBlock - 1,
+                                    GameState.GameGenesisTxMeta.TicketPrice);
+                            }
+                            else if (!GameState.IsDrawing)
+                            {
+                                ticketCount = await ADALottoClient.GetTPTxCountAsync(
+                                    GameState.StartBlock,
+                                    GameState.StartBlock + BLOCK_CRAWL_COUNT - 1,
+                                    GameState.GameGenesisTxMeta.TicketPrice);
+                            }
+                            GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
 
-                                    if (winningTPtxes.Count() > 0)
+                            if (GameState.IsDrawing)
+                            {
+                                nextRoundTicketCount += await ADALottoClient.GetTPTxCountAsync(
+                                    Math.Max(GameState.StartBlock, GameState.NextDrawBlock),
+                                    GameState.StartBlock + BLOCK_CRAWL_COUNT - 1,
+                                    GameState.GameGenesisTxMeta.TicketPrice);
+
+                                Combination = await GetWinningBlocksAsync(GameState.NextDrawBlock, GameState.GameGenesisTxMeta.Digits);
+
+                                if (Combination.Count() == GameState.GameGenesisTxMeta.Digits)
+                                {
+                                    var drawBlockInfo = await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock);
+                                    if (drawBlockInfo != null)
                                     {
-                                        await UpdatePreviousWinnersAsync(winningTPtxes, drawBlockInfo);
-                                        GameState.CurrentPot = 0;
-                                        GameState.GameGenesisTx = null;
-                                        GameState.GameGenesisTxMeta = null;
-                                        GameState.NextDrawBlock = 0;
-                                        GameState.PrevDrawBlock = 0;
+                                        var winningTPtxes = await ADALottoClient.GetWinningTPTxesAsync(
+                                            GameState.PrevDrawBlock,
+                                            GameState.NextDrawBlock - 1,
+                                            GameState.GameGenesisTxMeta.TicketPrice,
+                                            Combination.Select(wb => int.Parse(wb.Number)));
+                                        UpdatePreviousResults(Combination, drawBlockInfo, winningTPtxes.Count());
+
+                                        if (winningTPtxes.Count() > 0)
+                                        {
+                                            await UpdatePreviousWinnersAsync(winningTPtxes, drawBlockInfo);
+                                            GameState.CurrentPot = 0;
+                                            GameState.GameGenesisTx = null;
+                                            GameState.GameGenesisTxMeta = null;
+                                            GameState.NextDrawBlock = 0;
+                                            GameState.PrevDrawBlock = 0;
+                                        }
+                                        else
+                                        {
+                                            GameState.PrevDrawBlock = GameState.NextDrawBlock;
+                                            GameState.NextDrawBlock += GameState.GameGenesisTxMeta.BlockInterval;
+                                            GameState.CurrentPot += (long)(nextRoundTicketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
+                                            nextRoundTicketCount = 0;
+                                        }
                                     }
-                                    else
-                                    {
-                                        GameState.PrevDrawBlock = GameState.NextDrawBlock;
-                                        GameState.NextDrawBlock += GameState.GameGenesisTxMeta.BlockInterval;
-                                        GameState.CurrentPot += (long)(nextRoundTicketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
-                                        nextRoundTicketCount = 0;
-                                    }
+                                    GameState.IsDrawing = false;
+                                    DrawEnd?.Invoke(this, new EventArgs());
                                 }
+                            }
+                        }
+
+                        var ggTx = await ADALottoClient.GetGameGenesisTxAsync(GameState.StartBlock, GameState.StartBlock + BLOCK_CRAWL_COUNT - 1);
+                        if (ggTx != null && ggTx?.Block != null)
+                        {
+                            if (GameState.GameGenesisTx?.Block != null)
+                            {
+                                GameState.PrevDrawBlock = (long)GameState.GameGenesisTx.Block;
                                 GameState.IsDrawing = false;
                                 DrawEnd?.Invoke(this, new EventArgs());
                             }
+                            else
+                            {
+                                GameState.PrevDrawBlock = (long)ggTx.Block;
+                            }
+
+                            var ggTxMeta = GetMetaFromGGTx(ggTx);
+                            if (ggTxMeta != null)
+                            {
+                                GameState.GameGenesisTx = ggTx;
+                                GameState.GameGenesisTxMeta = ggTxMeta;
+                                GameState.CurrentPot = ggTxMeta.BasePrize;
+                                GameState.NextDrawBlock = (long)ggTx.Block + ggTxMeta.BlockInterval;
+
+
+                                var ticketCount = await ADALottoClient.GetTPTxCountAsync(
+                                    (long)GameState.GameGenesisTx.Block,
+                                    GameState.StartBlock + BLOCK_CRAWL_COUNT - 1,
+                                    GameState.GameGenesisTxMeta.TicketPrice);
+                                GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
+                            }
                         }
+                        OnFetch?.Invoke(this, new EventArgs());
+                        GameState.StartBlock = Math.Min(GameState.StartBlock + BLOCK_CRAWL_COUNT, LatestNetworkBlock.Id);
                     }
 
-                    var ggTx = await ADALottoClient.GetGameGenesisTxAsync(GameState.StartBlock, GameState.StartBlock + BLOCK_CRAWL_COUNT - 1);
-                    if (ggTx != null && ggTx?.Block != null)
-                    {
-                        if (GameState.GameGenesisTx?.Block != null)
-                        {
-                            GameState.PrevDrawBlock = (long)GameState.GameGenesisTx.Block;
-                            GameState.IsDrawing = false;
-                            DrawEnd?.Invoke(this, new EventArgs());
-                        }
-                        else
-                        {
-                            GameState.PrevDrawBlock = (long)ggTx.Block;
-                        }
-
-                        var ggTxMeta = GetMetaFromGGTx(ggTx);
-                        if (ggTxMeta != null)
-                        {
-                            GameState.GameGenesisTx = ggTx;
-                            GameState.GameGenesisTxMeta = ggTxMeta;
-                            GameState.CurrentPot = ggTxMeta.BasePrize;
-                            GameState.NextDrawBlock = (long)ggTx.Block + ggTxMeta.BlockInterval;
-
-
-                            var ticketCount = await ADALottoClient.GetTPTxCountAsync(
-                                (long)GameState.GameGenesisTx.Block,
-                                GameState.StartBlock + BLOCK_CRAWL_COUNT - 1,
-                                GameState.GameGenesisTxMeta.TicketPrice);
-                            GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
-                        }
-                    }
-                    OnFetch?.Invoke(this, new EventArgs());
-                    GameState.StartBlock = Math.Min(GameState.StartBlock + BLOCK_CRAWL_COUNT, LatestNetworkBlock.Id);
                 }
                 IsSyncing = false;
+                PreviousNetworkBlock = LatestNetworkBlock;
                 if (!IsInitialSyncFinished)
                 {
                     IsInitialSyncFinished = true;
