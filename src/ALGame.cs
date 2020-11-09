@@ -103,7 +103,7 @@ namespace ADALotto.ClientLib
                             {
                                 ticketCount = await ADALottoClient.GetTPTxCountAsync(
                                     GameState.StartBlock,
-                                    GameState.StartBlock + BLOCK_CRAWL_COUNT - 1,
+                                    Math.Min(GameState.StartBlock + BLOCK_CRAWL_COUNT, LatestNetworkBlock.Id) - 1,
                                     GameState.GameGenesisTxMeta.TicketPrice);
                             }
                             GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
