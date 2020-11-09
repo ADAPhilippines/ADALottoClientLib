@@ -189,8 +189,9 @@ namespace ADALotto.ClientLib
                 WinnerCount = winnerCount
             };
 
-            GameState.PreviousResults.ToList().Insert(0, result);
-            GameState.PreviousResults = GameState.PreviousResults.Take(10).ToList();
+            var resultsList = GameState.PreviousResults.ToList();
+            resultsList.Insert(0, result);
+            GameState.PreviousResults = resultsList.Take(10).ToList();
         }
 
         public async Task UpdatePreviousWinnersAsync(IEnumerable<Transaction> tpTxes, Block blockInfo)
