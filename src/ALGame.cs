@@ -83,7 +83,7 @@ namespace ADALotto.ClientLib
                 IsSyncing = true;
                 await GetLatestNetworkBlockAsync();
                 var nextRoundTicketCount = 0;
-                if (LatestNetworkBlock != PreviousNetworkBlock)
+                if (LatestNetworkBlock.Id != PreviousNetworkBlock.Id)
                 {
                     while (GameState.StartBlock < LatestNetworkBlock.Id)
                     {
