@@ -35,7 +35,10 @@ namespace ADALotto.ClientLib
                                     block,
                                     block1 {{
                                         id,
-                                        blockNo
+                                        blockNo,
+                                        epochNo,
+                                        size,
+                                        hash
                                     }},
                                     txMetadata {{
                                         id,
@@ -236,7 +239,13 @@ namespace ADALotto.ClientLib
                                 nodes {{
                                     id,
                                     block,
-                                    block1,
+                                    block1 {{
+                                        id,
+                                        blockNo,
+                                        epochNo,
+                                        size,
+                                        hash
+                                    }},
                                     txMetadata {{
                                         id,
                                         json
