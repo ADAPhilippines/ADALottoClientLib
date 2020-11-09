@@ -20,7 +20,8 @@ namespace ADALotto.ClientLib
         private bool IsInitialSyncFinished { get; set; } = false;
         private Block LatestNetworkBlock { get; set; } = new Block();
         public ALGameState GameState { get; set; } = new ALGameState();
-        public IEnumerable<ALWinningBlock> Combination {get;set;} = new List<ALWinningBlock>();
+        public IEnumerable<ALWinningBlock> Combination { get; set; } = new List<ALWinningBlock>();
+        public TimeSpan TotalRoundTime => CalculateDrawTime(GameState.StartBlock, GameState.NextDrawBlock);
         #endregion
 
         #region Events
@@ -40,7 +41,7 @@ namespace ADALotto.ClientLib
             GameState = startInfo;
             await GetStartBlock();
             GameState.IsRunning = true;
-            while(GameState.IsRunning)
+            while (GameState.IsRunning)
             {
                 _ = FetchAsync();
                 await Task.Delay(20000);
@@ -79,16 +80,16 @@ namespace ADALotto.ClientLib
                         {
                             GameState.IsDrawing = true;
                             DrawStart?.Invoke(this, new EventArgs());
-                            ticketCount = await  ADALottoClient.GetTPTxCountAsync(
-                                GameState.StartBlock, 
-                                GameState.NextDrawBlock - 1, 
+                            ticketCount = await ADALottoClient.GetTPTxCountAsync(
+                                GameState.StartBlock,
+                                GameState.NextDrawBlock - 1,
                                 GameState.GameGenesisTxMeta.TicketPrice);
                         }
-                        else if(!GameState.IsDrawing)
+                        else if (!GameState.IsDrawing)
                         {
                             ticketCount = await ADALottoClient.GetTPTxCountAsync(
-                                GameState.StartBlock, 
-                                GameState.StartBlock + BLOCK_CRAWL_COUNT - 1, 
+                                GameState.StartBlock,
+                                GameState.StartBlock + BLOCK_CRAWL_COUNT - 1,
                                 GameState.GameGenesisTxMeta.TicketPrice);
                         }
                         GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
@@ -96,7 +97,7 @@ namespace ADALotto.ClientLib
                         if (GameState.IsDrawing)
                         {
                             nextRoundTicketCount += await ADALottoClient.GetTPTxCountAsync(
-                                Math.Max(GameState.StartBlock, GameState.NextDrawBlock), 
+                                Math.Max(GameState.StartBlock, GameState.NextDrawBlock),
                                 GameState.StartBlock + BLOCK_CRAWL_COUNT - 1,
                                 GameState.GameGenesisTxMeta.TicketPrice);
 
@@ -196,7 +197,7 @@ namespace ADALotto.ClientLib
 
         public async Task UpdatePreviousWinnersAsync(IEnumerable<Transaction> tpTxes, Block blockInfo)
         {
-            foreach(var tpTx in tpTxes)
+            foreach (var tpTx in tpTxes)
             {
                 if (tpTx.Id != null)
                 {
@@ -233,7 +234,7 @@ namespace ADALotto.ClientLib
 
         public async Task<long> GetStartBlock()
         {
-            GameState.StartBlock = Math.Max(HARD_CHECKPOINT, GameState.StartBlock); 
+            GameState.StartBlock = Math.Max(HARD_CHECKPOINT, GameState.StartBlock);
             await GetLatestNetworkBlockAsync();
             var refBlock = LatestNetworkBlock.Id;
             var currentBlock = refBlock;
@@ -267,8 +268,14 @@ namespace ADALotto.ClientLib
         {
             if (ggTx?.TxMetadata?.FirstOrDefault()?.Json != null)
                 return JsonSerializer.Deserialize<ALGameGenesisTxMeta>(ggTx.TxMetadata.FirstOrDefault().Json);
-            else 
+            else
                 return null;
+        }
+
+        public static TimeSpan CalculateDrawTime(long startBlockNo, long endBlockNo)
+        {
+            var timeDiff = (endBlockNo - startBlockNo) * 20;
+            return TimeSpan.FromSeconds(timeDiff);
         }
     }
 }
