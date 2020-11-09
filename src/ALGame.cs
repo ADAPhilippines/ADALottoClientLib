@@ -13,13 +13,14 @@ namespace ADALotto.ClientLib
     public class ALGame
     {
         #region Properties
-        public ALGameState GameState { get; set; } = new ALGameState();
         private ADALottoClient ADALottoClient { get; set; } = new ADALottoClient(string.Empty, string.Empty);
         private const long HARD_CHECKPOINT = 4231231;
         private const long BLOCK_CRAWL_COUNT = 10;
         private bool IsSyncing { get; set; } = false;
         private bool IsInitialSyncFinished { get; set; } = false;
         private Block LatestNetworkBlock { get; set; } = new Block();
+        public ALGameState GameState { get; set; } = new ALGameState();
+        public IEnumerable<ALWinningBlock> Combination {get;set;} = new List<ALWinningBlock>();
         #endregion
 
         #region Events
@@ -95,9 +96,9 @@ namespace ADALotto.ClientLib
                                 GameState.StartBlock + BLOCK_CRAWL_COUNT - 1,
                                 GameState.GameGenesisTxMeta.TicketPrice);
 
-                            var winningBlocks = await GetWinningBlocksAsync(GameState.StartBlock, GameState.GameGenesisTxMeta.Digits);
+                            Combination = await GetWinningBlocksAsync(GameState.StartBlock, GameState.GameGenesisTxMeta.Digits);
 
-                            if (winningBlocks.Count == GameState.GameGenesisTxMeta.Digits)
+                            if (Combination.Count() == GameState.GameGenesisTxMeta.Digits)
                             {
                                 var drawBlockInfo = await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock);
                                 if (drawBlockInfo != null)
@@ -106,8 +107,8 @@ namespace ADALotto.ClientLib
                                         GameState.PrevDrawBlock,
                                         GameState.NextDrawBlock - 1,
                                         GameState.GameGenesisTxMeta.TicketPrice,
-                                        winningBlocks.Select(wb => int.Parse(wb.Number)));
-                                    UpdatePreviousResults(winningBlocks, drawBlockInfo, winningTPtxes.Count());
+                                        Combination.Select(wb => int.Parse(wb.Number)));
+                                    UpdatePreviousResults(Combination, drawBlockInfo, winningTPtxes.Count());
 
                                     if (winningTPtxes.Count() > 0)
                                     {
