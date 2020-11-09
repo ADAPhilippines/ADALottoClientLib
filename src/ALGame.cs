@@ -13,7 +13,7 @@ namespace ADALotto.ClientLib
     public class ALGame
     {
         #region Properties
-        private ADALottoClient ADALottoClient { get; set; } = new ADALottoClient(string.Empty, string.Empty);
+        private ADALottoClient ADALottoClient { get; set; }
         private const long HARD_CHECKPOINT = 4928312;
         private const long BLOCK_CRAWL_COUNT = 10;
         private bool IsSyncing { get; set; } = false;
@@ -30,9 +30,13 @@ namespace ADALotto.ClientLib
         public event EventHandler<EventArgs>? OnFetch;
         #endregion
 
-        public async Task StartAsync(ALGameState startInfo, string serverUrl, string hostAddress)
+        public ALGame(string serverUrl, string hostAddress)
         {
             ADALottoClient = new ADALottoClient(serverUrl, hostAddress);
+        }
+
+        public async Task StartAsync(ALGameState startInfo)
+        {
             GameState = startInfo;
             await GetStartBlock();
             GameState.IsRunning = true;
