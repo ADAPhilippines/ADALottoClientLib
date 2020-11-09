@@ -203,6 +203,7 @@ namespace ADALotto.ClientLib
                                 blocks (order_by: {{ id: { sortDir } }}, first: { limit }, where: {{ epochNo_gt: 208 }}) {{
                                     nodes {{
                                         id,
+                                        blockNo,
                                         epochNo,
                                         size,
                                         hash
@@ -235,6 +236,7 @@ namespace ADALotto.ClientLib
                                 nodes {{
                                     id,
                                     block,
+                                    block1,
                                     txMetadata {{
                                         id,
                                         json
