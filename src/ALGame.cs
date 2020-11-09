@@ -21,7 +21,18 @@ namespace ADALotto.ClientLib
         private Block LatestNetworkBlock { get; set; } = new Block();
         public ALGameState GameState { get; set; } = new ALGameState();
         public IEnumerable<ALWinningBlock> Combination { get; set; } = new List<ALWinningBlock>();
-        public TimeSpan TotalRoundTime => CalculateDrawTime(GameState.StartBlock, GameState.NextDrawBlock);
+        public TimeSpan RemainingRoundTime => CalculateDrawTime(GameState.StartBlock, GameState.NextDrawBlock);
+        public double RoundProgress
+        {
+            get
+            {
+                var result = 0d;
+                var totalRoundTime = CalculateDrawTime(GameState.PrevDrawBlock, GameState.NextDrawBlock);
+                var remainingTime = RemainingRoundTime;
+                result = 100 * (totalRoundTime.TotalSeconds - remainingTime.TotalSeconds) / totalRoundTime.TotalSeconds;
+                return result;
+            }
+        }
         #endregion
 
         #region Events
@@ -76,7 +87,7 @@ namespace ADALotto.ClientLib
                     if (GameState.GameGenesisTx != null && GameState.GameGenesisTxMeta != null)
                     {
                         var ticketCount = 0;
-                        if (GameState.StartBlock < GameState.NextDrawBlock && GameState.NextDrawBlock <= GameState.StartBlock + BLOCK_CRAWL_COUNT)
+                        if (GameState.StartBlock < GameState.NextDrawBlock && GameState.NextDrawBlock <= Math.Min(GameState.StartBlock + BLOCK_CRAWL_COUNT, LatestNetworkBlock.Id))
                         {
                             GameState.IsDrawing = true;
                             DrawStart?.Invoke(this, new EventArgs());
@@ -101,7 +112,7 @@ namespace ADALotto.ClientLib
                                 GameState.StartBlock + BLOCK_CRAWL_COUNT - 1,
                                 GameState.GameGenesisTxMeta.TicketPrice);
 
-                            Combination = await GetWinningBlocksAsync(GameState.StartBlock, GameState.GameGenesisTxMeta.Digits);
+                            Combination = await GetWinningBlocksAsync(GameState.NextDrawBlock, GameState.GameGenesisTxMeta.Digits);
 
                             if (Combination.Count() == GameState.GameGenesisTxMeta.Digits)
                             {
