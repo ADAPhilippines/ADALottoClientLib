@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\AdaLottoModels\src\ADALottoModels.csproj" />
+    <ProjectReference Include="..\..\ADALottoModels\src\ADALottoModels.csproj" />
   </ItemGroup>
 
 </Project>
