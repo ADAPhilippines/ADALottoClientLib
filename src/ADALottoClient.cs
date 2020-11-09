@@ -29,10 +29,14 @@ namespace ADALotto.ClientLib
                 Query = $@"
                     query ($filter: AdaLottoTxFilterInput!) {{
                         adaLottoGameInfo {{
-                            transactions(order_by: {{ id: DESC }}, filter: $filter, where: {{ block_gte: { startBlock }, block_lte: {endBlock} }}) {{
+                            transactions(order_by: {{ id: DESC }}, filter: $filter, where: {{ block_gte: { startBlock }, block_lte: { endBlock } }}) {{
                                 nodes {{
                                     id,
                                     block,
+                                    block1 {{
+                                        id,
+                                        blockNo
+                                    }},
                                     txMetadata {{
                                         id,
                                         json
@@ -56,7 +60,7 @@ namespace ADALotto.ClientLib
             return graphQLResponse?.Data?.AdaLottoGameInfo?.Transactions?.Nodes?.FirstOrDefault();
         }
 
-        public async Task<Transaction?> GetGameGenesisTxAsync(long startBlock, long endBlock)
+        public async Task<Transaction?> GetGameGenesisTxAsync(Block startBlock, Block endBlock)
         {
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.Genesis, startBlock, endBlock, GameWalletAddress, GameWalletAddress, null, "DESC");
             return transactions?.FirstOrDefault();
@@ -69,7 +73,7 @@ namespace ADALotto.ClientLib
                 Query = $@"
                         query {{
                           blockChainInfo {{
-                            blocks (first: 100, where: {{ id_gt: { startBlock }, txCount_gt: 0 }}) {{
+                            blocks (first: 100, where: {{ blockNo_gt: { startBlock }, txCount_gt: 0 }}) {{
                               nodes {{
                                 size,
                                 hash
@@ -87,7 +91,7 @@ namespace ADALotto.ClientLib
             return resultBlocks;
         }
 
-        public async Task<IEnumerable<Transaction>> GetWinningTPTxesAsync(long startBlock, long endBlock, long amount, IEnumerable<int> nums)
+        public async Task<IEnumerable<Transaction>> GetWinningTPTxesAsync(Block startBlock, Block endBlock, long amount, IEnumerable<int> nums)
         {
             var result = new List<Transaction>();
             var query = new GraphQLRequest
@@ -95,7 +99,7 @@ namespace ADALotto.ClientLib
                 Query = $@"
                     query ($filter: AdaLottoTxFilterInput!) {{
                         adaLottoGameInfo {{
-                            transactions(filter: $filter, where: {{ block_gte: { startBlock }, block_lte: {endBlock} }}, nums: [{String.Join(", ", nums)}]) {{
+                            transactions(filter: $filter, where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}, nums: [{String.Join(", ", nums)}]) {{
                                 totalCount
                             }}
                         }}
@@ -116,18 +120,19 @@ namespace ADALotto.ClientLib
             return result;
         }
 
-        public async Task<Block?> GetBlockInfo(long id)
+        public async Task<Block> GetBlockInfo(long blockNo)
         {
-            Block? result;
+            var result = new Block();
             var query = new GraphQLRequest
             {
                 Query = $@"
                         query {{
                           blockChainInfo {{
-                            blocks (where: {{ id: { id } }}) {{
+                            blocks (where: {{ blockNo: { blockNo } }}) {{
                               nodes {{
                                 time,
                                 id,
+                                blockNo,
                                 epochNo,
                                 size,
                                 hash
@@ -140,27 +145,25 @@ namespace ADALotto.ClientLib
             var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
             if (graphQLResponse?.Data?.BlockChainInfo?.Blocks != null)
                 result = graphQLResponse.Data.BlockChainInfo.Blocks.Nodes.ToList().FirstOrDefault();
-            else
-                result = null;
 
             return result;
         }
 
-        public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(long startBlock, long endBlock, long amount)
+        public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(Block startBlock, Block endBlock, long amount)
         {
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, null, null, "ASC", amount);
 
             return transactions;
         }
 
-        public async Task<int> GetTPTxCountAsync(long startBlock, long endBlock, long amount)
+        public async Task<int> GetTPTxCountAsync(Block startBlock, Block endBlock, long amount)
         {
             var query = new GraphQLRequest
             {
                 Query = $@"
                     query ($filter: AdaLottoTxFilterInput!) {{
                         adaLottoGameInfo {{
-                            transactions(filter: $filter, where: {{ block_gte: { startBlock }, block_lte: {endBlock} }}) {{
+                            transactions(filter: $filter, where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}) {{
                                 totalCount
                             }}
                         }}
@@ -217,7 +220,7 @@ namespace ADALotto.ClientLib
             return result;
         }
 
-        public async Task<IEnumerable<Transaction>> GetGameTransactionsAsync(GameTxMetaType type, long startBlock, long endBlock, string receiver, string? sender = "", int? limit=null, string sortDir = "ASC", long amount = 1000000)
+        public async Task<IEnumerable<Transaction>> GetGameTransactionsAsync(GameTxMetaType type, Block startBlock, Block endBlock, string receiver, string? sender = "", int? limit=null, string sortDir = "ASC", long amount = 1000000)
         {
             var result = new List<Transaction>();
             var limitClause = limit != null ? $"first { limit }," : string.Empty;
@@ -228,7 +231,7 @@ namespace ADALotto.ClientLib
                     Query = $@"
                     query ($filter: AdaLottoTxFilterInput!) {{
                         adaLottoGameInfo {{
-                            transactions(order_by: {{ id: { sortDir } }}, filter: $filter, { limitClause } where: {{ block_gte: { startBlock }, block_lte: {endBlock} }}) {{
+                            transactions(order_by: {{ id: { sortDir } }}, filter: $filter, { limitClause } where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}) {{
                                 nodes {{
                                     id,
                                     block,
@@ -308,7 +311,7 @@ namespace ADALotto.ClientLib
                 result = txOut != null ? txOut.Address : string.Empty;
             }
 
-            return result;
+            return result ?? string.Empty;
         }
     }
 }
