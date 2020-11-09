@@ -4,12 +4,13 @@ using ADALottoModels.Enumerations;
 using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace ADALotto.Client
+namespace ADALotto.ClientLib
 {
     public class ADALottoClient
     {
@@ -61,12 +62,6 @@ namespace ADALotto.Client
             return transactions?.FirstOrDefault();
         }
 
-        public async Task<Transaction?> GetEndGameTxAsync(long startBlock, long endBlock)
-        {
-            var transactions = await GetGameTransactionsAsync(GameTxMetaType.EndGame, startBlock, endBlock, GameWalletAddress, GameWalletAddress, null, "DESC");
-            return transactions?.FirstOrDefault();
-        }
-
         public async Task<IEnumerable<Block>> GetWinningBlocksAsync(long startBlock)
         {
             var query = new GraphQLRequest
@@ -74,7 +69,7 @@ namespace ADALotto.Client
                 Query = $@"
                         query {{
                           blockChainInfo {{
-                            blocks (first: 50, where: {{ id_gt: { startBlock }, txCount_gt: 0 }}) {{
+                            blocks (first: 100, where: {{ id_gt: { startBlock }, txCount_gt: 0 }}) {{
                               nodes {{
                                 size,
                                 hash
@@ -90,6 +85,35 @@ namespace ADALotto.Client
                 resultBlocks = graphQLResponse.Data.BlockChainInfo.Blocks.Nodes.ToList();
 
             return resultBlocks;
+        }
+
+        public async Task<IEnumerable<Transaction>> GetWinningTPTxesAsync(long startBlock, long endBlock, long amount, IEnumerable<int> nums)
+        {
+            var result = new List<Transaction>();
+            var query = new GraphQLRequest
+            {
+                Query = $@"
+                    query ($filter: AdaLottoTxFilterInput!) {{
+                        adaLottoGameInfo {{
+                            transactions(filter: $filter, where: {{ block_gte: { startBlock }, block_lte: {endBlock} }}, nums: [{String.Join(", ", nums)}]) {{
+                                totalCount
+                            }}
+                        }}
+                    }}",
+                Variables = new
+                {
+                    filter = new
+                    {
+                        receiver = GameWalletAddress,
+                        amount_gte = amount
+                    }
+                }
+            };
+
+            var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
+            result = graphQLResponse?.Data?.AdaLottoGameInfo?.Transactions?.Nodes?.ToList() ?? result;
+
+            return result;
         }
 
         public async Task<Block?> GetBlockInfo(long id)
@@ -127,6 +151,34 @@ namespace ADALotto.Client
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, null, null, "ASC", amount);
 
             return transactions;
+        }
+
+        public async Task<int> GetTPTxCountAsync(long startBlock, long endBlock, long amount)
+        {
+            var query = new GraphQLRequest
+            {
+                Query = $@"
+                    query ($filter: AdaLottoTxFilterInput!) {{
+                        adaLottoGameInfo {{
+                            transactions(filter: $filter, where: {{ block_gte: { startBlock }, block_lte: {endBlock} }}) {{
+                                totalCount
+                            }}
+                        }}
+                    }}",
+                Variables = new
+                {
+                    filter = new
+                    {
+                        receiver = GameWalletAddress,
+                        type = 2,
+                        amount_gte = amount
+                    }
+                }
+            };
+
+            var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
+            
+            return graphQLResponse?.Data?.AdaLottoGameInfo?.Transactions?.TotalCount ?? 0;
         }
 
         public async Task<Block?> GetLatestBlockAsync()
@@ -208,9 +260,8 @@ namespace ADALotto.Client
             return result;
         }
 
-        public async Task<string?> GetTxSenderAddressAsync(long txId)
+        public async Task<string> GetTxSenderAddressAsync(long txId)
         {
-            var result = string.Empty;
             var query = new GraphQLRequest
             {
                 Query = $@"
@@ -233,6 +284,7 @@ namespace ADALotto.Client
 
             var txIn = transaction?.InTxIns.FirstOrDefault();
 
+            var result = string.Empty;
             if (txIn != null)
             {
                 query = new GraphQLRequest
