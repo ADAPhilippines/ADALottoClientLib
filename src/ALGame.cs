@@ -190,6 +190,8 @@ namespace ADALotto.ClientLib
 
                         GameState.StartBlock = LatestNetworkBlock.BlockNo <= GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT 
                             ? LatestNetworkBlock : await ADALottoClient.GetBlockInfo(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT);
+                        
+                        Console.WriteLine(GameState.StartBlock.BlockNo);    
                         OnFetch?.Invoke(this, new EventArgs());
                     }
 
@@ -266,7 +268,7 @@ namespace ADALotto.ClientLib
 
             while (GameState.StartBlock.BlockNo < currentBlock.BlockNo)
             {
-                var startBlock = await ADALottoClient.GetBlockInfo(currentBlock.BlockNo - BLOCK_CRAWL_COUNT - 1);    
+                var startBlock = await ADALottoClient.GetBlockInfo(currentBlock.BlockNo - BLOCK_CRAWL_COUNT - 1);
                 var ggTx = await ADALottoClient.GetGameGenesisTxAsync(startBlock, currentBlock);
                 if (ggTx != null && ggTx.Block1 != null)
                 {
@@ -284,6 +286,7 @@ namespace ADALotto.ClientLib
                     }
                 }
                 currentBlock = await ADALottoClient.GetBlockInfo(currentBlock.BlockNo - BLOCK_CRAWL_COUNT);
+                Console.WriteLine(currentBlock.BlockNo);    
             }
             return await ADALottoClient.GetBlockInfo(HARD_CHECKPOINT);
         }
