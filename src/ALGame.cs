@@ -182,8 +182,8 @@ namespace ADALotto.ClientLib
                                 GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
                             }
                         }
-                        OnFetch?.Invoke(this, new EventArgs());
                         GameState.StartBlock = Math.Min(GameState.StartBlock + BLOCK_CRAWL_COUNT, LatestNetworkBlock.Id);
+                        OnFetch?.Invoke(this, new EventArgs());
                     }
 
                 }
