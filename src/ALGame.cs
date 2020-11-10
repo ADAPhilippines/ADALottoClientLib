@@ -122,7 +122,7 @@ namespace ADALotto.ClientLib
 
                                 if (Combination.Count() == GameState.GameGenesisTxMeta.Digits)
                                 {
-                                    var drawBlockInfo = GameState.NextDrawBlock;
+                                    var drawBlockInfo = await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo);
                                     if (drawBlockInfo != null)
                                     {
                                         endBlock = await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo - 1);
@@ -144,9 +144,8 @@ namespace ADALotto.ClientLib
                                         }
                                         else
                                         {
-                                            var nextDrawBlock = await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo + GameState.GameGenesisTxMeta.BlockInterval);
                                             GameState.PrevDrawBlock = GameState.NextDrawBlock;
-                                            GameState.NextDrawBlock = nextDrawBlock;
+                                            GameState.NextDrawBlock = new Block { BlockNo = GameState.NextDrawBlock.BlockNo + GameState.GameGenesisTxMeta.BlockInterval };
                                             GameState.CurrentPot += (long)(nextRoundTicketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
                                             nextRoundTicketCount = 0;
                                         }
