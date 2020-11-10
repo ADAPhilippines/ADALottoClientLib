@@ -155,8 +155,9 @@ namespace ADALotto.ClientLib
                                 }
                             }
                         }
-
-                        var searchEndBlock = await ADALottoClient.GetBlockInfo(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT - 1);
+                        
+                        
+                        var searchEndBlock = await ADALottoClient.GetBlockInfo(Math.Min(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT, LatestNetworkBlock.BlockNo) - 1);
                         var ggTx = await ADALottoClient.GetGameGenesisTxAsync(GameState.StartBlock, searchEndBlock);
                         if (ggTx != null && ggTx?.Block1 != null)
                         {
