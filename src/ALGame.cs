@@ -63,6 +63,7 @@ namespace ADALotto.ClientLib
                 try
                 {
                     _ = FetchAsync();
+                    IsSyncing = false;
                 }
                 catch(Exception ex)
                 {
