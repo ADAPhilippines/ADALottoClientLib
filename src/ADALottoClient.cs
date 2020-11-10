@@ -136,11 +136,23 @@ namespace ADALotto.ClientLib
                         new TransactionMeta { Id = 12345566, Json = JsonSerializer.Serialize(tpTxMeta)}
                     }
                 };
+
+                var newTx2 = new Transaction
+                {
+                    Id = 2950845,
+                    Block = 4923599,
+                    TxMetadata = new List<TransactionMeta>
+                    {
+                        new TransactionMeta { Id = 12345566, Json = JsonSerializer.Serialize(tpTxMeta)}
+                    }
+                };
+
                 if (result == null)
                     result = new List<Transaction>();
                 result = result.ToList();
                 result.Add(newTx);
                 result.Add(newTx);
+                result.Add(newTx2);
             }
 
             return result;
