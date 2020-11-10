@@ -22,7 +22,9 @@ namespace ADALotto.ClientLib
         private Block PreviousNetworkBlock { get; set; } = new Block();
         public ALGameState GameState { get; set; } = new ALGameState();
         public IEnumerable<ALWinningBlock> Combination { get; set; } = new List<ALWinningBlock>();
-        public TimeSpan RemainingRoundTime => CalculateDrawTime(GameState.StartBlock.BlockNo, GameState.NextDrawBlock.BlockNo);
+        public TimeSpan RemainingRoundTime => GameState.GameGenesisTx != null 
+            ? CalculateDrawTime(GameState.StartBlock.BlockNo, GameState.NextDrawBlock.BlockNo) : TimeSpan.FromSeconds(0);
+            
         public double RoundProgress
         {
             get
