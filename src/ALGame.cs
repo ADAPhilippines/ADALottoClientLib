@@ -155,7 +155,7 @@ namespace ADALotto.ClientLib
 
                                         if (winningTPtxes.Count() > 0)
                                         {
-                                            await UpdatePreviousWinnersAsync(winningTPtxes);
+                                            await UpdatePreviousWinnersAsync(winningTPtxes, drawBlockInfo);
                                             GameState.CurrentPot = 0;
                                             GameState.GameGenesisTx = null;
                                             GameState.GameGenesisTxMeta = null;
@@ -247,7 +247,7 @@ namespace ADALotto.ClientLib
             GameState.PreviousResults = resultsList;
         }
 
-        private async Task UpdatePreviousWinnersAsync(IEnumerable<Transaction> tpTxes)
+        private async Task UpdatePreviousWinnersAsync(IEnumerable<Transaction> tpTxes, Block blockInfo)
         {
             foreach (var tpTx in tpTxes)
             {
@@ -257,7 +257,7 @@ namespace ADALotto.ClientLib
                     {
                         Address = await ADALottoClient.GetTxSenderAddressAsync((long)tpTx.Id),
                         Prize = GameState.CurrentPot / tpTxes.Count(),
-                        DrawBlock = GameState.NextDrawBlock
+                        DrawBlock = blockInfo
                     };
                     
                     var winnerList = GameState.PreviousWinners?.ToList() ?? new List<ALWinner>();
