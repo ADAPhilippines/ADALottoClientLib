@@ -74,7 +74,7 @@ namespace ADALotto.ClientLib
                     IsSyncing = false;
                     Console.WriteLine($"Error occured: {ex}");
                 }
-                await Task.Delay(20000);
+                await Task.Delay(10000);
             }
         }
 
