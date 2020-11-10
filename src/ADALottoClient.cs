@@ -33,6 +33,7 @@ namespace ADALotto.ClientLib
                                 nodes {{
                                     id,
                                     block,
+                                    hash,
                                     block1 {{
                                         id,
                                         blockNo,
