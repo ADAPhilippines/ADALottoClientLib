@@ -24,7 +24,7 @@ namespace ADALotto.ClientLib
         public IEnumerable<ALWinningBlock> Combination { get; set; } = new List<ALWinningBlock>();
         public TimeSpan RemainingRoundTime => GameState.GameGenesisTx != null 
             ? CalculateDrawTime(GameState.StartBlock.BlockNo, GameState.NextDrawBlock.BlockNo) : TimeSpan.FromSeconds(0);
-            
+
         public double RoundProgress
         {
             get
@@ -180,7 +180,7 @@ namespace ADALotto.ClientLib
                                 GameState.GameGenesisTx = ggTx;
                                 GameState.GameGenesisTxMeta = ggTxMeta;
                                 GameState.CurrentPot = ggTxMeta.BasePrize;
-                                GameState.NextDrawBlock = await ADALottoClient.GetBlockInfo(ggTx.Block1.BlockNo + ggTxMeta.BlockInterval);
+                                GameState.NextDrawBlock = new Block { BlockNo = ggTx.Block1.BlockNo + ggTxMeta.BlockInterval };
 
                                 var ticketCount = await ADALottoClient.GetTPTxCountAsync(
                                     GameState.GameGenesisTx.Block1,
