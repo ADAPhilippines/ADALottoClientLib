@@ -120,7 +120,7 @@ namespace ADALotto.ClientLib
             var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
             result = graphQLResponse?.Data?.AdaLottoGameInfo?.Transactions?.Nodes?.ToList() ?? result;
 
-            if(startBlock.BlockNo > 4932155)
+            if(startBlock.BlockNo > 4932134)
             {
                 var tpTxMeta =  new ALGameTicketTxMeta
                 {
