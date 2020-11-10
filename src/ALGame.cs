@@ -93,7 +93,7 @@ namespace ADALotto.ClientLib
                             {
                                 GameState.IsDrawing = true;
                                 DrawStart?.Invoke(this, new EventArgs());
-                                var endBlock = await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo - 1);
+                                var endBlock = await ADALottoClient.GetBlockInfo(Math.Min(GameState.NextDrawBlock.BlockNo, LatestNetworkBlock.BlockNo) - 1);
                                 ticketCount = await ADALottoClient.GetTPTxCountAsync(
                                     GameState.StartBlock,
                                     endBlock,
@@ -112,7 +112,7 @@ namespace ADALotto.ClientLib
                             if (GameState.IsDrawing)
                             {
                                 var startBlock = await ADALottoClient.GetBlockInfo(Math.Max(GameState.StartBlock.BlockNo, GameState.NextDrawBlock.BlockNo));
-                                var endBlock = await ADALottoClient.GetBlockInfo(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT - 1);
+                                var endBlock = await ADALottoClient.GetBlockInfo(Math.Min(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT, LatestNetworkBlock.BlockNo) - 1);
                                 nextRoundTicketCount += await ADALottoClient.GetTPTxCountAsync(
                                     startBlock,
                                     endBlock,
