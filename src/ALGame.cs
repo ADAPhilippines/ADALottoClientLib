@@ -260,7 +260,7 @@ namespace ADALotto.ClientLib
                         DrawBlock = GameState.NextDrawBlock
                     };
                     
-                    var winnerList = GameState.PreviousWinners.ToList() ?? new List<ALWinner>();
+                    var winnerList = GameState.PreviousWinners?.ToList() ?? new List<ALWinner>();
                     winnerList.Insert(0, newWinner);
                     if(winnerList.Count > 10) winnerList.Remove(winnerList.Last());
                     GameState.PreviousWinners = winnerList;
