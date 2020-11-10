@@ -60,7 +60,14 @@ namespace ADALotto.ClientLib
             GameState.IsRunning = true;
             while (GameState.IsRunning)
             {
-                _ = FetchAsync();
+                try
+                {
+                    _ = FetchAsync();
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"Error occured: {ex}");
+                }
                 await Task.Delay(20000);
             }
         }
