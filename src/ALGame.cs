@@ -46,7 +46,7 @@ namespace ADALotto.ClientLib
         public event EventHandler<EventArgs>? InitialSyncComplete;
         public event EventHandler<EventArgs>? DrawStart;
         public event EventHandler<EventArgs>? DrawEnd;
-        public event EventHandler<EventArgs>? OnFetch;
+        public event EventHandler<EventArgs>? Fetch;
         #endregion
 
         public ALGame(string serverUrl, string hostAddress)
@@ -211,7 +211,7 @@ namespace ADALotto.ClientLib
                             ? LatestNetworkBlock : await ADALottoClient.GetBlockInfo(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT);
 
                         Console.WriteLine(GameState.StartBlock.BlockNo);
-                        OnFetch?.Invoke(this, new EventArgs());
+                        Fetch?.Invoke(this, new EventArgs());
                     }
 
                 }
