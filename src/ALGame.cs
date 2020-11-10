@@ -67,11 +67,11 @@ namespace ADALotto.ClientLib
             {
                 try
                 {
-                    _ = FetchAsync();
-                    IsSyncing = false;
+                    await FetchAsync();
                 }
                 catch(Exception ex)
                 {
+                    IsSyncing = false;
                     Console.WriteLine($"Error occured: {ex}");
                 }
                 await Task.Delay(20000);
