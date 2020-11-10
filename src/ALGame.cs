@@ -151,7 +151,7 @@ namespace ADALotto.ClientLib
                                             endBlock,
                                             GameState.GameGenesisTxMeta.TicketPrice,
                                             Combination.Select(wb => int.Parse(wb.Number)));
-                                        UpdatePreviousResults(Combination, drawBlockInfo, winningTPtxes.Count());
+                                        UpdatePreviousResults(Combination.ToList(), drawBlockInfo, winningTPtxes.Count());
 
                                         if (winningTPtxes.Count() > 0)
                                         {
