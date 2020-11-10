@@ -16,6 +16,7 @@ namespace ADALotto.ClientLib
         private ADALottoClient ADALottoClient { get; set; }
         private const long HARD_CHECKPOINT = 4930669;
         private const long BLOCK_CRAWL_COUNT = 89;
+        private const string VERSION = "0.1.0-alpha";
         private bool IsSyncing { get; set; } = false;
         private bool IsInitialSyncFinished { get; set; } = false;
         private Block LatestNetworkBlock { get; set; } = new Block();
