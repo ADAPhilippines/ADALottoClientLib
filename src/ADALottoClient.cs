@@ -120,23 +120,23 @@ namespace ADALotto.ClientLib
             var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
             result = graphQLResponse?.Data?.AdaLottoGameInfo?.Transactions?.Nodes?.ToList() ?? result;
 
-            var tpTxMeta =  new ALGameTicketTxMeta
-            {
-                Combination = new int[] { 31 },
-            };
-            var newTx = new Transaction
-            {
-                Id = 2985863,
-                Block = 4923599,
-                TxMetadata = new List<TransactionMeta>
-                {
-                    new TransactionMeta { Id = 12345566, Json = JsonSerializer.Serialize(tpTxMeta)}
-                }
-            };
-            if (result == null)
-                result = new List<Transaction>();
-            result = result.ToList();
-            result.Add(newTx);
+            // var tpTxMeta =  new ALGameTicketTxMeta
+            // {
+            //     Combination = new int[] { 31 },
+            // };
+            // var newTx = new Transaction
+            // {
+            //     Id = 2985863,
+            //     Block = 4923599,
+            //     TxMetadata = new List<TransactionMeta>
+            //     {
+            //         new TransactionMeta { Id = 12345566, Json = JsonSerializer.Serialize(tpTxMeta)}
+            //     }
+            // };
+            // if (result == null)
+            //     result = new List<Transaction>();
+            // result = result.ToList();
+            // result.Add(newTx);
 
             return result;
         }
