@@ -53,9 +53,14 @@ namespace ADALotto.ClientLib
             ADALottoClient = new ADALottoClient(serverUrl, hostAddress);
         }
 
-        public async Task StartAsync(ALGameState startInfo)
+        public void Start(ALGameState startInfo)
         {
             GameState = startInfo;
+            _ = ProcessSyncAsync();
+        }
+
+        private async Task ProcessSyncAsync()
+        {
             await GetStartBlock();
             GameState.IsRunning = true;
             while (GameState.IsRunning)
