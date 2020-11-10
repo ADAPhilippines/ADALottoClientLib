@@ -101,7 +101,6 @@ namespace ADALotto.ClientLib
             {
                 IsSyncing = true;
                 await GetLatestNetworkBlockAsync();
-                var nextRoundTicketCount = 0;
                 if (LatestNetworkBlock.BlockNo != PreviousNetworkBlock.BlockNo)
                 {
                     while (GameState.StartBlock.BlockNo < LatestNetworkBlock.BlockNo)
@@ -133,7 +132,7 @@ namespace ADALotto.ClientLib
                             {
                                 var startBlock = await ADALottoClient.GetBlockInfo(Math.Max(GameState.StartBlock.BlockNo, GameState.NextDrawBlock.BlockNo));
                                 var endBlock = await ADALottoClient.GetBlockInfo(Math.Min(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT, LatestNetworkBlock.BlockNo) - 1);
-                                nextRoundTicketCount += await ADALottoClient.GetTPTxCountAsync(
+                                GameState.NextRoundTicketCount += await ADALottoClient.GetTPTxCountAsync(
                                     startBlock,
                                     endBlock,
                                     GameState.GameGenesisTxMeta.TicketPrice);
@@ -166,8 +165,8 @@ namespace ADALotto.ClientLib
                                         {
                                             GameState.PrevDrawBlock = GameState.NextDrawBlock;
                                             GameState.NextDrawBlock = new Block { BlockNo = GameState.NextDrawBlock.BlockNo + GameState.GameGenesisTxMeta.BlockInterval };
-                                            GameState.CurrentPot += (long)(nextRoundTicketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
-                                            nextRoundTicketCount = 0;
+                                            GameState.CurrentPot += (long)(GameState.NextRoundTicketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
+                                            GameState.NextRoundTicketCount = 0;
                                         }
                                     }
                                     GameState.IsDrawing = false;
