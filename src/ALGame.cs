@@ -29,9 +29,13 @@ namespace ADALotto.ClientLib
         {
             get
             {
-                var totalRoundTime = CalculateDrawTime(GameState.PrevDrawBlock.BlockNo, GameState.NextDrawBlock.BlockNo);
-                var remainingTime = RemainingRoundTime;
-                double result = 100 * (totalRoundTime.TotalSeconds - remainingTime.TotalSeconds) / totalRoundTime.TotalSeconds;
+                var result = 0d;
+                if(GameState.GameGenesisTxMeta != null)
+                {
+                    var totalRoundTime = CalculateDrawTime(GameState.NextDrawBlock.BlockNo - GameState.GameGenesisTxMeta.BlockInterval, GameState.NextDrawBlock.BlockNo);
+                    var remainingTime = RemainingRoundTime;
+                    result = 100 * (totalRoundTime.TotalSeconds - remainingTime.TotalSeconds) / totalRoundTime.TotalSeconds;
+                }
                 return result;
             }
         }
