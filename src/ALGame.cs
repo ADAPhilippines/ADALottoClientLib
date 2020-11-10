@@ -211,6 +211,8 @@ namespace ADALotto.ClientLib
                         GameState.StartBlock = LatestNetworkBlock.BlockNo <= GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT
                             ? LatestNetworkBlock : await ADALottoClient.GetBlockInfo(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT);
 
+                        
+                        await ProcessRewardStatusAsync();
                         Console.WriteLine(GameState.StartBlock.BlockNo);
                         Fetch?.Invoke(this, new EventArgs());
                     }
@@ -222,6 +224,20 @@ namespace ADALotto.ClientLib
                 {
                     IsInitialSyncFinished = true;
                     InitialSyncComplete?.Invoke(this, new EventArgs());
+                }
+            }
+        }
+
+        public async Task ProcessRewardStatusAsync()
+        {
+            if(GameState.PreviousWinners != null)
+            {
+                foreach(var winner in GameState.PreviousWinners)
+                {
+                    if(winner.RewardTx == null)
+                    {
+                        winner.RewardTx = await ADALottoClient.GetRewardTxAsync(winner.DrawBlock, LatestNetworkBlock, winner.Prize, winner.Address);
+                    }
                 }
             }
         }
