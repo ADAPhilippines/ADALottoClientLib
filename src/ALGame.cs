@@ -14,8 +14,8 @@ namespace ADALotto.ClientLib
     {
         #region Properties
         private ADALottoClient ADALottoClient { get; set; }
-        private const long HARD_CHECKPOINT = 4927675;
-        private const long BLOCK_CRAWL_COUNT = 15;
+        private const long HARD_CHECKPOINT = 4930669;
+        private const long BLOCK_CRAWL_COUNT = 599;
         private bool IsSyncing { get; set; } = false;
         private bool IsInitialSyncFinished { get; set; } = false;
         private Block LatestNetworkBlock { get; set; } = new Block();
