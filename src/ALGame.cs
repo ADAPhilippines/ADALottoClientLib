@@ -269,15 +269,24 @@ namespace ADALotto.ClientLib
             {
                 if (tpTx.Id != null)
                 {
-                    var newWinner = new ALWinner
-                    {
-                        Address = await ADALottoClient.GetTxSenderAddressAsync((long)tpTx.Id),
-                        Prize = GameState.CurrentPot / tpTxes.Count(),
-                        DrawBlock = blockInfo
-                    };
-                    
+                    var address = await ADALottoClient.GetTxSenderAddressAsync((long)tpTx.Id);
+                    var winner = GameState.PreviousWinners.Where(w => w.Address == address).FirstOrDefault();
                     var winnerList = GameState.PreviousWinners?.ToList() ?? new List<ALWinner>();
-                    winnerList.Insert(0, newWinner);
+                    if(winner == null)
+                    {
+                        var newWinner = new ALWinner
+                        {
+                            Address = address,
+                            Prize = GameState.CurrentPot / tpTxes.Count(),
+                            DrawBlock = blockInfo
+                        };
+                        winnerList.Insert(0, newWinner);
+                    }
+                    else
+                    {
+                        winner.Prize += GameState.CurrentPot / tpTxes.Count();
+                    }
+                    
                     if(winnerList.Count > 10) winnerList.Remove(winnerList.Last());
                     GameState.PreviousWinners = winnerList;
                 }
