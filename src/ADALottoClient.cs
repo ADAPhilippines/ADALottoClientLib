@@ -22,14 +22,14 @@ namespace ADALotto.ClientLib
             GameWalletAddress = gameWalletAddress;
         }
 
-        public async Task<Transaction?> GetRewardTxAsync(long startBlock, long endBlock, long amount, string address)
+        public async Task<Transaction?> GetRewardTxAsync(Block startBlock, Block endBlock, long amount, string address)
         {
             var query = new GraphQLRequest
             {
                 Query = $@"
                     query ($filter: AdaLottoTxFilterInput!) {{
                         adaLottoGameInfo {{
-                            transactions(order_by: {{ id: DESC }}, filter: $filter, where: {{ block_gte: { startBlock }, block_lte: { endBlock } }}) {{
+                            transactions(order_by: {{ id: DESC }}, filter: $filter, where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}) {{
                                 nodes {{
                                     id,
                                     block,
@@ -66,6 +66,23 @@ namespace ADALotto.ClientLib
         public async Task<Transaction?> GetGameGenesisTxAsync(Block startBlock, Block endBlock)
         {
             var transactions = await GetGameTransactionsAsync(GameTxMetaType.Genesis, startBlock, endBlock, GameWalletAddress, GameWalletAddress, null, "DESC");
+            var tpTxMeta =  new ALGameTicketTxMeta
+            {
+                Combination = new int[] { 31 },
+            };
+            var newTx = new Transaction
+            {
+                Id = 2985863,
+                Block = 4923599,
+                TxMetadata = new List<TransactionMeta>
+                {
+                    new TransactionMeta { Id = 12345566, Json = JsonSerializer.Serialize(tpTxMeta)}
+                }
+            };
+            if (transactions == null)
+                transactions = new List<Transaction>();
+            transactions = transactions.ToList();
+            ((List<Transaction>)transactions).Add(newTx);
             return transactions?.FirstOrDefault();
         }
 
