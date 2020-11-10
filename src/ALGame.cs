@@ -21,7 +21,7 @@ namespace ADALotto.ClientLib
         private Block LatestNetworkBlock { get; set; } = new Block();
         private Block PreviousNetworkBlock { get; set; } = new Block();
         public ALGameState GameState { get; set; } = new ALGameState();
-        public IEnumerable<ALWinningBlock> Combination { get; set; } = new List<ALWinningBlock>();
+        public IEnumerable<ALWinningBlock> Combination { get; private set; } = new List<ALWinningBlock>();
         public TimeSpan RemainingRoundTime => GameState.GameGenesisTx != null 
             ? CalculateDrawTime(GameState.StartBlock.BlockNo, GameState.NextDrawBlock.BlockNo) : TimeSpan.FromSeconds(0);
 
@@ -158,7 +158,6 @@ namespace ADALotto.ClientLib
                                     }
                                     GameState.IsDrawing = false;
                                     DrawEnd?.Invoke(this, new EventArgs());
-                                    Combination = Enumerable.Empty<ALWinningBlock>();
                                 }
                             }
                         }
@@ -211,6 +210,11 @@ namespace ADALotto.ClientLib
                     InitialSyncComplete?.Invoke(this, new EventArgs());
                 }
             }
+        }
+
+        public void ClearCombination()
+        {
+            Combination = Enumerable.Empty<ALWinningBlock>();
         }
 
         private void UpdatePreviousResults(IEnumerable<ALWinningBlock> winningBlocks, Block blockInfo, int winnerCount)
