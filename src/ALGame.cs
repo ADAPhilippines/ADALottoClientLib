@@ -158,6 +158,7 @@ namespace ADALotto.ClientLib
                                     }
                                     GameState.IsDrawing = false;
                                     DrawEnd?.Invoke(this, new EventArgs());
+                                    Combination = Enumerable.Empty<ALWinningBlock>();
                                 }
                             }
                         }
