@@ -140,6 +140,7 @@ namespace ADALotto.ClientLib
                     result = new List<Transaction>();
                 result = result.ToList();
                 result.Add(newTx);
+                result.Add(newTx);
             }
 
             return result;
