@@ -374,7 +374,7 @@ namespace ADALotto.ClientLib
                             var tpTxMeta = JsonSerializer.Deserialize<ALGameTicketTxMeta>(tpTxMetaString);
                             if(tpTxMeta?.Combination != null)
                             {
-                                result.Add(String.Concat(tx.Hash.Select(b => b.ToString("x2"))), String.Join("-",tpTxMeta.Combination.ToString()));
+                                result.Add(String.Concat(tx.Hash.Select(b => b.ToString("x2"))), String.Join("-",tpTxMeta.Combination));
                             }
                         }
                     }
