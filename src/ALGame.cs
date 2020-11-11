@@ -74,6 +74,7 @@ namespace ADALotto.ClientLib
                 catch(Exception ex)
                 {
                     IsSyncing = false;
+                    IsInitialSyncFinished = false;
                     Console.WriteLine($"Error occured: {ex}");
                 }
                 await Task.Delay(10000);
