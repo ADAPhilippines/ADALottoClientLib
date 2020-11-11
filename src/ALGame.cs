@@ -14,9 +14,9 @@ namespace ADALotto.ClientLib
     {
         #region Properties
         private ADALottoClient ADALottoClient { get; set; }
-        private const long HARD_CHECKPOINT = 4931995;
-        private const long BLOCK_CRAWL_COUNT = 20;
-        public const string VERSION = "0.1.1-alpha";
+        private const long HARD_CHECKPOINT = 3196652;
+        private const long BLOCK_CRAWL_COUNT = 70;
+        public string Version => "0.1.2-alpha";
         private bool IsSyncing { get; set; } = false;
         public bool IsInitialSyncFinished { get; set; } = false;
         public bool IsGameRunning => GameState?.GameGenesisTx != null;
@@ -58,6 +58,7 @@ namespace ADALotto.ClientLib
         public void Start(ALGameState startInfo)
         {
             GameState = startInfo;
+            GameState.Version = Version;
             _ = ProcessSyncAsync();
         }
 
