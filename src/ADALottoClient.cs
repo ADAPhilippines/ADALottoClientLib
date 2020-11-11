@@ -166,10 +166,9 @@ namespace ADALotto.ClientLib
             return result;
         }
 
-        public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(Block startBlock, Block endBlock, long amount)
+        public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(string senderAddress, Block startBlock, Block endBlock, long amount, int limit = 10)
         {
-            var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, null, null, "ASC", amount);
-
+            var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, senderAddress, limit, "ASC", amount);
             return transactions;
         }
 
@@ -253,6 +252,7 @@ namespace ADALotto.ClientLib
                                 nodes {{
                                     id,
                                     block,
+                                    hash,
                                     block1 {{
                                         id,
                                         blockNo,

@@ -144,6 +144,7 @@ namespace ADALotto.ClientLib
 
                                 if (Combination.Count() == GameState.GameGenesisTxMeta.Digits)
                                 {
+                                    var tickets = await GetTPTxesAsync("addr1qy2h3xdydulke3yaypzd5su822u2nqx85k89z3pyca5ctfglzuws68h7g2flql88w6vj00yrrft55vdhm0wzgg52jx7sff4paz", 20);
                                     var drawBlockInfo = await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo);
                                     if (drawBlockInfo != null)
                                     {
@@ -355,6 +356,32 @@ namespace ADALotto.ClientLib
                 return JsonSerializer.Deserialize<ALGameGenesisTxMeta>(ggTx.TxMetadata.FirstOrDefault().Json);
             else
                 return null;
+        }
+
+        public async Task<Dictionary<string, string>> GetTPTxesAsync(string senderAddress, int limit = 10)
+        {
+            var result = new Dictionary<string, string>();
+            if(GameState.GameGenesisTx != null && GameState.GameGenesisTxMeta != null)
+            {
+                var tpTxes = await ADALottoClient.GetTicketPurchaseTxAsync(senderAddress, GameState.PrevDrawBlock, GameState.NextDrawBlock, GameState.GameGenesisTxMeta.TicketPrice, limit);
+                if(tpTxes != null)
+                {
+                    foreach(var tx in tpTxes)
+                    {
+                        var tpTxMetaString = tx?.TxMetadata?.FirstOrDefault()?.Json;
+                        if(tx != null && tpTxMetaString != null)
+                        {
+                            var tpTxMeta = JsonSerializer.Deserialize<ALGameTicketTxMeta>(tpTxMetaString);
+                            if(tpTxMeta?.Combination != null)
+                            {
+                                result.Add("key", String.Concat(tx.Hash.Select(b => b.ToString("x2"))));
+                                result.Add("Combination", tpTxMeta.Combination.ToString());
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         public static TimeSpan CalculateDrawTime(long startBlockNo, long endBlockNo)
