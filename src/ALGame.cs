@@ -272,7 +272,7 @@ namespace ADALotto.ClientLib
                 if (tpTx.Id != null)
                 {
                     var address = await ADALottoClient.GetTxSenderAddressAsync((long)tpTx.Id);
-                    var winner = GameState.PreviousWinners?.Where(w => w.Address == address).FirstOrDefault();
+                    var winner = GameState.PreviousWinners?.Where(w => w.Address == address && w.DrawBlock == blockInfo).FirstOrDefault();
                     var winnerList = GameState.PreviousWinners?.ToList() ?? new List<ALWinner>();
                     if (winner == null)
                     {
