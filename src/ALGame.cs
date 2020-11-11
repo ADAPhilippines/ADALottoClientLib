@@ -144,7 +144,7 @@ namespace ADALotto.ClientLib
 
                                 if (Combination.Count() == GameState.GameGenesisTxMeta.Digits)
                                 {
-                                    var tickets = await GetTicketsByAddressAsync("addr1qy2h3xdydulke3yaypzd5su822u2nqx85k89z3pyca5ctfglzuws68h7g2flql88w6vj00yrrft55vdhm0wzgg52jx7sff4paz", 20);
+                                    var tickets = await GetTicketsByAddressAsync("addr1qy2h3xdydulke3yaypzd5su822u2nqx85k89z3pyca5ctfglzuws68h7g2flql88w6vj00yrrft55vdhm0wzgg52jx7sff4paz", 100);
                                     var drawBlockInfo = await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo);
                                     if (drawBlockInfo != null)
                                     {
