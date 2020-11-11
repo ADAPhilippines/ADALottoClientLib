@@ -363,6 +363,7 @@ namespace ADALotto.ClientLib
             var result = new Dictionary<string, string>();
             if(GameState.GameGenesisTx != null && GameState.GameGenesisTxMeta != null)
             {
+                var endBlock = LatestNetworkBlock.BlockNo < GameState.NextDrawBlock.BlockNo ? LatestNetworkBlock : await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo);
                 var tpTxes = await ADALottoClient.GetTicketPurchaseTxAsync(senderAddress, GameState.PrevDrawBlock, GameState.NextDrawBlock, GameState.GameGenesisTxMeta.TicketPrice, limit);
                 if(tpTxes != null)
                 {
