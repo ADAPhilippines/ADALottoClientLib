@@ -16,7 +16,7 @@ namespace ADALotto.ClientLib
         private ADALottoClient ADALottoClient { get; set; }
         private const long HARD_CHECKPOINT = 4934993;
         private const long BLOCK_CRAWL_COUNT = 70;
-        public static string Version => "0.1.5-alpha";
+        public static string Version => "0.1.6-alpha";
         private bool IsSyncing { get; set; } = false;
         public bool IsInitialSyncFinished { get; set; } = false;
         public bool IsGameRunning => GameState?.GameGenesisTx != null;
@@ -129,7 +129,7 @@ namespace ADALotto.ClientLib
                                     endBlock,
                                     GameState.GameGenesisTxMeta.TicketPrice);
                             }
-                            GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
+                            GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * GameState.GameGenesisTxMeta.WinnerPrizeRatio);
 
                             if (GameState.IsDrawing)
                             {
@@ -168,7 +168,7 @@ namespace ADALotto.ClientLib
                                         {
                                             GameState.PrevDrawBlock = GameState.NextDrawBlock;
                                             GameState.NextDrawBlock = new Block { BlockNo = GameState.NextDrawBlock.BlockNo + GameState.GameGenesisTxMeta.BlockInterval };
-                                            GameState.CurrentPot += (long)(GameState.NextRoundTicketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
+                                            GameState.CurrentPot += (long)(GameState.NextRoundTicketCount * GameState.GameGenesisTxMeta.TicketPrice * GameState.GameGenesisTxMeta.WinnerPrizeRatio);
                                             GameState.NextRoundTicketCount = 0;
                                         }
                                     }
@@ -206,7 +206,7 @@ namespace ADALotto.ClientLib
                                     GameState.GameGenesisTx.Block1,
                                     searchEndBlock,
                                     GameState.GameGenesisTxMeta.TicketPrice);
-                                GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * 0.7);
+                                GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * GameState.GameGenesisTxMeta.WinnerPrizeRatio);
                             }
                         }
 
