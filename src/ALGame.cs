@@ -14,9 +14,9 @@ namespace ADALotto.ClientLib
     {
         #region Properties
         private ADALottoClient ADALottoClient { get; set; }
-        private const long HARD_CHECKPOINT = 4934993;
-        private const long BLOCK_CRAWL_COUNT = 70;
-        public static string Version => "0.1.8-alpha";
+        private const long HARD_CHECKPOINT = 4936600;
+        private const long BLOCK_CRAWL_COUNT = 2000;
+        public static string Version => "0.1.9-alpha";
         private bool IsSyncing { get; set; } = false;
         public bool IsInitialSyncFinished { get; set; } = false;
         public bool IsGameRunning => GameState?.GameGenesisTx != null;
