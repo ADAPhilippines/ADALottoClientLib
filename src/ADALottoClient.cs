@@ -103,8 +103,22 @@ namespace ADALotto.ClientLib
                 Query = $@"
                     query ($filter: AdaLottoTxFilterInput!) {{
                         adaLottoGameInfo {{
-                            transactions(filter: $filter, where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}, nums: [{String.Join(", ", nums)}]) {{
-                                totalCount
+                            winningTpTxes(filter: $filter, where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}, nums: [{String.Join(", ", nums)}]) {{
+                                nodes {{
+                                    id,
+                                    block,
+                                    block1 {{
+                                        id,
+                                        blockNo,
+                                        epochNo,
+                                        size,
+                                        hash
+                                    }},
+                                    txMetadata {{
+                                        id,
+                                        json
+                                    }}
+                                }}
                             }}
                         }}
                     }}",
