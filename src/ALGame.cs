@@ -129,7 +129,7 @@ namespace ADALotto.ClientLib
                                     endBlock,
                                     GameState.GameGenesisTxMeta.TicketPrice);
                             }
-                            GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * GameState.GameGenesisTxMeta.WinnerPrizeRatio);
+                            GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * GameState.GameGenesisTxMeta.WinnerPrizeRatio / 100);
 
                             if (GameState.IsDrawing)
                             {
@@ -168,7 +168,7 @@ namespace ADALotto.ClientLib
                                         {
                                             GameState.PrevDrawBlock = GameState.NextDrawBlock;
                                             GameState.NextDrawBlock = new Block { BlockNo = GameState.NextDrawBlock.BlockNo + GameState.GameGenesisTxMeta.BlockInterval };
-                                            GameState.CurrentPot += (long)(GameState.NextRoundTicketCount * GameState.GameGenesisTxMeta.TicketPrice * GameState.GameGenesisTxMeta.WinnerPrizeRatio);
+                                            GameState.CurrentPot += (long)(GameState.NextRoundTicketCount * GameState.GameGenesisTxMeta.TicketPrice * GameState.GameGenesisTxMeta.WinnerPrizeRatio / 100);
                                             GameState.NextRoundTicketCount = 0;
                                         }
                                     }
@@ -206,7 +206,7 @@ namespace ADALotto.ClientLib
                                     GameState.GameGenesisTx.Block1,
                                     searchEndBlock,
                                     GameState.GameGenesisTxMeta.TicketPrice);
-                                GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * GameState.GameGenesisTxMeta.WinnerPrizeRatio);
+                                GameState.CurrentPot += (long)(ticketCount * GameState.GameGenesisTxMeta.TicketPrice * GameState.GameGenesisTxMeta.WinnerPrizeRatio / 100);
                             }
                         }
 
