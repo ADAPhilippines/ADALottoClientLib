@@ -24,7 +24,7 @@ namespace ADALotto.ClientLib
         private Block PreviousNetworkBlock { get; set; } = new Block();
         public ALGameState GameState { get; set; } = new ALGameState();
         public IEnumerable<ALWinningBlock> Combination { get; private set; } = new List<ALWinningBlock>();
-        public TimeSpan RemainingRoundTime => GameState.GameGenesisTx != null 
+        public TimeSpan RemainingRoundTime => GameState.GameGenesisTx != null
             ? CalculateDrawTime(GameState.StartBlock.BlockNo, GameState.NextDrawBlock.BlockNo) : TimeSpan.FromSeconds(0);
 
         public double RoundProgress
@@ -32,7 +32,7 @@ namespace ADALotto.ClientLib
             get
             {
                 var result = 0d;
-                if(GameState.GameGenesisTxMeta != null)
+                if (GameState.GameGenesisTxMeta != null)
                 {
                     var totalRoundTime = CalculateDrawTime(GameState.NextDrawBlock.BlockNo - GameState.GameGenesisTxMeta.BlockInterval, GameState.NextDrawBlock.BlockNo);
                     var remainingTime = RemainingRoundTime;
@@ -72,7 +72,7 @@ namespace ADALotto.ClientLib
                 {
                     await FetchAsync();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     IsSyncing = false;
                     IsInitialSyncFinished = false;
@@ -177,8 +177,8 @@ namespace ADALotto.ClientLib
                                 }
                             }
                         }
-                        
-                        
+
+
                         var searchEndBlock = await ADALottoClient.GetBlockInfo(Math.Min(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT, LatestNetworkBlock.BlockNo) - 1);
                         var ggTx = await ADALottoClient.GetGameGenesisTxAsync(GameState.StartBlock, searchEndBlock);
                         if (ggTx != null && ggTx?.Block1 != null)
@@ -213,7 +213,7 @@ namespace ADALotto.ClientLib
                         GameState.StartBlock = LatestNetworkBlock.BlockNo <= GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT
                             ? LatestNetworkBlock : await ADALottoClient.GetBlockInfo(GameState.StartBlock.BlockNo + BLOCK_CRAWL_COUNT);
 
-                        
+
                         await ProcessRewardStatusAsync();
                         Console.WriteLine(GameState.StartBlock.BlockNo);
                         Fetch?.Invoke(this, new EventArgs());
@@ -232,11 +232,11 @@ namespace ADALotto.ClientLib
 
         public async Task ProcessRewardStatusAsync()
         {
-            if(GameState.PreviousWinners != null)
+            if (GameState.PreviousWinners != null)
             {
-                foreach(var winner in GameState.PreviousWinners)
+                foreach (var winner in GameState.PreviousWinners)
                 {
-                    if(winner.RewardTx == null)
+                    if (winner.RewardTx == null)
                     {
                         winner.RewardTx = await ADALottoClient.GetRewardTxAsync(winner.DrawBlock, LatestNetworkBlock, winner.Prize, winner.Address);
                     }
@@ -261,7 +261,7 @@ namespace ADALotto.ClientLib
 
             var resultsList = GameState.PreviousResults?.ToList() ?? new List<ALResult>();
             resultsList.Insert(0, result);
-            if(resultsList.Count > 10) resultsList.Remove(resultsList.Last());
+            if (resultsList.Count > 10) resultsList.Remove(resultsList.Last());
             GameState.PreviousResults = resultsList;
         }
 
@@ -274,7 +274,7 @@ namespace ADALotto.ClientLib
                     var address = await ADALottoClient.GetTxSenderAddressAsync((long)tpTx.Id);
                     var winner = GameState.PreviousWinners?.Where(w => w.Address == address).FirstOrDefault();
                     var winnerList = GameState.PreviousWinners?.ToList() ?? new List<ALWinner>();
-                    if(winner == null)
+                    if (winner == null)
                     {
                         var newWinner = new ALWinner
                         {
@@ -289,7 +289,7 @@ namespace ADALotto.ClientLib
                         winner.Prize += GameState.CurrentPot / tpTxes.Count();
                     }
 
-                    if(winnerList.Count > 10) winnerList.Remove(winnerList.Last());
+                    if (winnerList.Count > 10) winnerList.Remove(winnerList.Last());
                     GameState.PreviousWinners = winnerList;
                 }
             }
@@ -360,21 +360,21 @@ namespace ADALotto.ClientLib
         public async Task<Dictionary<string, string>> GetTicketsByAddressAsync(string senderAddress, int limit = 10)
         {
             var result = new Dictionary<string, string>();
-            if(GameState.GameGenesisTx != null && GameState.GameGenesisTxMeta != null)
+            if (GameState.GameGenesisTx != null && GameState.GameGenesisTxMeta != null)
             {
                 var endBlock = LatestNetworkBlock.BlockNo < GameState.NextDrawBlock.BlockNo ? LatestNetworkBlock : await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo);
                 var tpTxes = await ADALottoClient.GetTicketPurchaseTxAsync(senderAddress, GameState.PrevDrawBlock, endBlock, GameState.GameGenesisTxMeta.TicketPrice, limit);
-                if(tpTxes != null)
+                if (tpTxes != null)
                 {
-                    foreach(var tx in tpTxes)
+                    foreach (var tx in tpTxes)
                     {
                         var tpTxMetaString = tx?.TxMetadata?.FirstOrDefault()?.Json;
-                        if(tx != null && tpTxMetaString != null)
+                        if (tx != null && tpTxMetaString != null)
                         {
                             var tpTxMeta = JsonSerializer.Deserialize<ALGameTicketTxMeta>(tpTxMetaString);
-                            if(tpTxMeta?.Combination != null)
+                            if (tpTxMeta?.Combination != null)
                             {
-                                result.Add(String.Concat(tx.Hash.Select(b => b.ToString("x2"))), String.Join("-",tpTxMeta.Combination));
+                                result.Add(String.Concat(tx.Hash.Select(b => b.ToString("x2"))), String.Join("-", tpTxMeta.Combination));
                             }
                         }
                     }

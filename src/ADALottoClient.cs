@@ -196,7 +196,7 @@ namespace ADALotto.ClientLib
             };
 
             var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
-            
+
             return graphQLResponse?.Data?.AdaLottoGameInfo?.Transactions?.TotalCount ?? 0;
         }
 
@@ -237,7 +237,7 @@ namespace ADALotto.ClientLib
             return result;
         }
 
-        public async Task<IEnumerable<Transaction>> GetGameTransactionsAsync(GameTxMetaType type, Block startBlock, Block endBlock, string receiver, string? sender = "", int? limit=null, string sortDir = "ASC", long amount = 1000000)
+        public async Task<IEnumerable<Transaction>> GetGameTransactionsAsync(GameTxMetaType type, Block startBlock, Block endBlock, string receiver, string? sender = "", int? limit = null, string sortDir = "ASC", long amount = 1000000)
         {
             var result = new List<Transaction>();
             var limitClause = limit != null ? $"first: { limit }," : string.Empty;
