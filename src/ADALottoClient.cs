@@ -133,7 +133,7 @@ namespace ADALotto.ClientLib
             };
 
             var graphQLResponse = await GraphQLClient.SendQueryAsync<QueryResponse>(query);
-            result = graphQLResponse?.Data?.AdaLottoGameInfo?.Transactions?.Nodes?.ToList() ?? result;
+            result = graphQLResponse?.Data?.AdaLottoGameInfo?.WinningTpTxes?.Nodes?.ToList() ?? result;
             return result;
         }
 
