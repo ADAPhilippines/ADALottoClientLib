@@ -364,7 +364,7 @@ namespace ADALotto.ClientLib
             {
                 var startBlock = GameState.PrevDrawBlock.Id != null ? GameState.PrevDrawBlock : await ADALottoClient.GetBlockInfo(GameState.PrevDrawBlock.BlockNo);
                 var endBlock = LatestNetworkBlock.BlockNo < GameState.NextDrawBlock.BlockNo ? LatestNetworkBlock : await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo);
-                var tpTxes = await ADALottoClient.GetTicketPurchaseTxAsync(senderAddress, GameState.PrevDrawBlock, endBlock, GameState.GameGenesisTxMeta.TicketPrice, limit);
+                var tpTxes = await ADALottoClient.GetTicketPurchaseTxAsync(senderAddress, startBlock, endBlock, GameState.GameGenesisTxMeta.TicketPrice, limit);
                 if (tpTxes != null)
                 {
                     foreach (var tx in tpTxes)
