@@ -168,7 +168,7 @@ namespace ADALotto.ClientLib
 
         public async Task<IEnumerable<Transaction>?> GetTicketPurchaseTxAsync(string senderAddress, Block startBlock, Block endBlock, long amount, int limit = 10)
         {
-            var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, senderAddress, limit, "ASC", amount);
+            var transactions = await GetGameTransactionsAsync(GameTxMetaType.TicketPurchase, startBlock, endBlock, GameWalletAddress, senderAddress, limit, "DESC", amount);
             return transactions;
         }
 

@@ -16,7 +16,7 @@ namespace ADALotto.ClientLib
         private ADALottoClient ADALottoClient { get; set; }
         private const long HARD_CHECKPOINT = 4936600;
         private const long BLOCK_CRAWL_COUNT = 2000;
-        public static string Version => "0.1.9-alpha";
+        public static string Version => "0.1.10-alpha";
         private bool IsSyncing { get; set; } = false;
         public bool IsInitialSyncFinished { get; set; } = false;
         public bool IsGameRunning => GameState?.GameGenesisTx != null;
@@ -362,6 +362,7 @@ namespace ADALotto.ClientLib
             var result = new Dictionary<string, string>();
             if (GameState.GameGenesisTx != null && GameState.GameGenesisTxMeta != null)
             {
+                var startBlock = GameState.PrevDrawBlock.Id != null ? GameState.PrevDrawBlock : await ADALottoClient.GetBlockInfo(GameState.PrevDrawBlock.BlockNo);
                 var endBlock = LatestNetworkBlock.BlockNo < GameState.NextDrawBlock.BlockNo ? LatestNetworkBlock : await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo);
                 var tpTxes = await ADALottoClient.GetTicketPurchaseTxAsync(senderAddress, GameState.PrevDrawBlock, endBlock, GameState.GameGenesisTxMeta.TicketPrice, limit);
                 if (tpTxes != null)
