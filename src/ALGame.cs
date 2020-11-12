@@ -148,6 +148,7 @@ namespace ADALotto.ClientLib
                                     if (drawBlockInfo != null)
                                     {
                                         endBlock = await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo - 1);
+                                        var prevDrawBlock = GameState.PrevDrawBlock.Id != null ? GameState.PrevDrawBlock : await ADALottoClient.GetBlockInfo(GameState.PrevDrawBlock.BlockNo);
                                         var winningTPtxes = await ADALottoClient.GetWinningTPTxesAsync(
                                             GameState.PrevDrawBlock,
                                             endBlock,
