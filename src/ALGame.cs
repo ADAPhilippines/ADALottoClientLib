@@ -148,7 +148,7 @@ namespace ADALotto.ClientLib
                                     if (drawBlockInfo != null)
                                     {
                                         endBlock = await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo - 1);
-                                        var prevDrawBlock = GameState.PrevDrawBlock.Id != null ? GameState.PrevDrawBlock : await ADALottoClient.GetBlockInfo(GameState.PrevDrawBlock.BlockNo);
+                                        GameState.PrevDrawBlock = GameState.PrevDrawBlock.Id != null ? GameState.PrevDrawBlock : await ADALottoClient.GetBlockInfo(GameState.PrevDrawBlock.BlockNo);
                                         var winningTPtxes = await ADALottoClient.GetWinningTPTxesAsync(
                                             GameState.PrevDrawBlock,
                                             endBlock,
@@ -363,9 +363,9 @@ namespace ADALotto.ClientLib
             var result = new Dictionary<string, string>();
             if (GameState.GameGenesisTx != null && GameState.GameGenesisTxMeta != null)
             {
-                var startBlock = GameState.PrevDrawBlock.Id != null ? GameState.PrevDrawBlock : await ADALottoClient.GetBlockInfo(GameState.PrevDrawBlock.BlockNo);
+                GameState.PrevDrawBlock = GameState.PrevDrawBlock.Id != null ? GameState.PrevDrawBlock : await ADALottoClient.GetBlockInfo(GameState.PrevDrawBlock.BlockNo);
                 var endBlock = LatestNetworkBlock.BlockNo < GameState.NextDrawBlock.BlockNo ? LatestNetworkBlock : await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo);
-                var tpTxes = await ADALottoClient.GetTicketPurchaseTxAsync(senderAddress, startBlock, endBlock, GameState.GameGenesisTxMeta.TicketPrice, limit);
+                var tpTxes = await ADALottoClient.GetTicketPurchaseTxAsync(senderAddress, GameState.PrevDrawBlock, endBlock, GameState.GameGenesisTxMeta.TicketPrice, limit);
                 if (tpTxes != null)
                 {
                     foreach (var tx in tpTxes)
