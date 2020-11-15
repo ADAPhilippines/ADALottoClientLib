@@ -16,7 +16,7 @@ namespace ADALotto.ClientLib
         private ADALottoClient ADALottoClient { get; set; }
         private const long HARD_CHECKPOINT = 4936600;
         private const long BLOCK_CRAWL_COUNT = 2000;
-        public static string Version => "0.1.11-alpha";
+        public static string Version => "0.1.12-alpha";
         private bool IsSyncing { get; set; } = false;
         public bool IsInitialSyncFinished { get; set; } = false;
         public bool IsGameRunning => GameState?.GameGenesisTx != null;
@@ -169,8 +169,8 @@ namespace ADALotto.ClientLib
                                             GameState.PrevDrawBlock =  GameState.NextDrawBlock.Id != null ? GameState.NextDrawBlock : await ADALottoClient.GetBlockInfo(GameState.NextDrawBlock.BlockNo);
                                             GameState.NextDrawBlock = new Block { BlockNo = GameState.NextDrawBlock.BlockNo + GameState.GameGenesisTxMeta.BlockInterval };
                                             GameState.CurrentPot += (long)(GameState.NextRoundTicketCount * GameState.GameGenesisTxMeta.TicketPrice * GameState.GameGenesisTxMeta.WinnerPrizeRatio / 100);
-                                            GameState.NextRoundTicketCount = 0;
                                         }
+                                        GameState.NextRoundTicketCount = 0;
                                     }
                                     GameState.IsDrawing = false;
                                     DrawEnd?.Invoke(this, new EventArgs());
