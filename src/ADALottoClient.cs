@@ -32,9 +32,9 @@ namespace ADALotto.ClientLib
                             transactions(order_by: {{ id: DESC }}, filter: $filter, where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}) {{
                                 nodes {{
                                     id,
-                                    block,
+                                    blockId,
                                     hash,
-                                    block1 {{
+                                    block {{
                                         id,
                                         blockNo,
                                         epochNo,
@@ -106,8 +106,8 @@ namespace ADALotto.ClientLib
                             winningTpTxes(filter: $filter, where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}, nums: [{String.Join(", ", nums)}]) {{
                                 nodes {{
                                     id,
-                                    block,
-                                    block1 {{
+                                    blockId,
+                                    block {{
                                         id,
                                         blockNo,
                                         epochNo,
@@ -251,9 +251,9 @@ namespace ADALotto.ClientLib
                             transactions(order_by: {{ id: { sortDir } }}, filter: $filter, { limitClause } where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}) {{
                                 nodes {{
                                     id,
-                                    block,
+                                    blockId,
                                     hash,
-                                    block1 {{
+                                    block {{
                                         id,
                                         blockNo,
                                         epochNo,
