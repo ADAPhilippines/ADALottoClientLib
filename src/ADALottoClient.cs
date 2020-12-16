@@ -29,7 +29,7 @@ namespace ADALotto.ClientLib
                 Query = $@"
                     query ($filter: AdaLottoTxFilterInput!) {{
                         adaLottoGameInfo {{
-                            transactions(order_by: {{ id: DESC }}, filter: $filter, where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}) {{
+                            transactions(order_by: {{ id: DESC }}, filter: $filter, where: {{ blockId_gte: { startBlock.Id }, blockId_lte: { endBlock.Id } }}) {{
                                 nodes {{
                                     id,
                                     blockId,
@@ -103,7 +103,7 @@ namespace ADALotto.ClientLib
                 Query = $@"
                     query ($filter: AdaLottoTxFilterInput!) {{
                         adaLottoGameInfo {{
-                            winningTpTxes(filter: $filter, where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}, nums: [{String.Join(", ", nums)}]) {{
+                            winningTpTxes(filter: $filter, where: {{ blockId_gte: { startBlock.Id }, blockId_lte: { endBlock.Id } }}, nums: [{String.Join(", ", nums)}]) {{
                                 nodes {{
                                     id,
                                     blockId,
@@ -179,7 +179,7 @@ namespace ADALotto.ClientLib
                 Query = $@"
                     query ($filter: AdaLottoTxFilterInput!) {{
                         adaLottoGameInfo {{
-                            transactions(filter: $filter, where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}) {{
+                            transactions(filter: $filter, where: {{ blockId_gte: { startBlock.Id }, blockId_lte: { endBlock.Id } }}) {{
                                 totalCount
                             }}
                         }}
@@ -248,7 +248,7 @@ namespace ADALotto.ClientLib
                     Query = $@"
                     query ($filter: AdaLottoTxFilterInput!) {{
                         adaLottoGameInfo {{
-                            transactions(order_by: {{ id: { sortDir } }}, filter: $filter, { limitClause } where: {{ block_gte: { startBlock.Id }, block_lte: { endBlock.Id } }}) {{
+                            transactions(order_by: {{ id: { sortDir } }}, filter: $filter, { limitClause } where: {{ blockId_gte: { startBlock.Id }, blockId_lte: { endBlock.Id } }}) {{
                                 nodes {{
                                     id,
                                     blockId,
